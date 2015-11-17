@@ -68,7 +68,7 @@ begin
     status_fifo : fifo
     generic map
     (
-        DWIDTH => DWIDTH,
+        DWIDTH => STATUS_WIDTH,
         BUFFER_SIZE => BUFFER_SIZE
     )
     port map

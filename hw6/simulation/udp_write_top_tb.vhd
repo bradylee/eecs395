@@ -40,7 +40,15 @@ architecture behavior of udp_write_top_tb is
 
     constant DWIDTH : natural := BYTE;
     constant BUFFER_SIZE : natural := 1024;
-    constant PACKET_LENGTH : natural := 1024;
+    constant MAX_PACKET_LENGTH : natural := 1024;
+
+    constant ETH_SRC_ADDR_DEF : std_logic_vector (ETH_SRC_ADDR_BYTES * BYTE - 1 downto 0) := X"0015c509c7fd";
+    constant ETH_DST_ADDR_DEF : std_logic_vector (ETH_DST_ADDR_BYTES * BYTE - 1 downto 0) := X"000a3501bf4d";
+    constant IP_SRC_ADDR_DEF : std_logic_vector (IP_SRC_ADDR_BYTES * BYTE - 1 downto 0) := X"01020309";
+    constant IP_DST_ADDR_DEF : std_logic_vector (IP_DST_ADDR_BYTES * BYTE - 1 downto 0) := X"01020304";
+    constant IP_ID_DEF : natural := 8189;
+    constant UDP_SRC_PORT_DEF : natural := 10012;
+    constant UDP_DST_PORT_DEF : natural := 10012;
 
     -- clock, reset signals
     signal input_clk : std_logic := '0';
@@ -75,6 +83,14 @@ architecture behavior of udp_write_top_tb is
     signal read_errors : natural := 0;
 
 begin
+
+    eth_src_addr <= ETH_SRC_ADDR_DEF;
+    eth_dst_addr <= ETH_DST_ADDR_DEF;
+    ip_src_addr <= IP_SRC_ADDR_DEF;
+    ip_dst_addr <= IP_DST_ADDR_DEF;
+    ip_id <= std_logic_vector(to_unsigned(IP_ID_DEF, IP_ID_BYTES * BYTE));
+    udp_src_port <= std_logic_vector(to_unsigned(UDP_SRC_PORT_DEF, UDP_SRC_PORT_BYTES * BYTE));
+    udp_dst_port <= std_logic_vector(to_unsigned(UDP_DST_PORT_DEF, UDP_DST_PORT_BYTES * BYTE));
 
     top_inst : component udp_write_top
     generic map
@@ -134,10 +150,11 @@ begin
 
     input_process : process
         file input_file : text;
-        variable char : std_logic_vector(BYTE - 1 downto 0);
+        variable char : std_logic_vector (BYTE - 1 downto 0);
         variable count : natural := 0;
         variable ln : line;
-        variable line_valid : boolean;
+        variable console : line;
+        variable line_valid : boolean := True;
     begin
         wait until (reset = '1');
         wait until (reset = '0');
@@ -153,15 +170,18 @@ begin
             status_wr_en <= '1';
             status_din <= std_logic_vector(to_unsigned(START_OF_FRAME, STATUS_WIDTH));
             wait until (input_clk = '1');
+            wait until (input_clk = '0');
+            status_wr_en <= '0';
+            wait until (input_clk = '1');
             count := 0;
-            while (count < PACKET_LENGTH and not ENDFILE(input_file)) loop
+            while (count < MAX_PACKET_LENGTH and not ENDFILE(input_file)) loop
                 readline (input_file, ln);
                 while (count < PACKET_LENGTH and line_valid) loop
                     wait until (input_clk = '0');
                     input_wr_en <= '0';
                     status_wr_en <= '0';
                     if (input_full = '0' and status_full = '0') then
-                        hread(ln, char, line_valid);
+                        read (ln, char, line_valid);
                         if (line_valid) then
                             input_wr_en <= '1';
                             status_wr_en <= '1';
@@ -204,13 +224,13 @@ begin
         file_open (compare_file, DATA_COMP, read_mode);
 
         -- write pcap header
-        hwrite(out_ln, to_slv(PCAP_MAGIC_NUMBER, PCAP_MAGIC_NUMBER_BYTES));
-        hwrite(out_ln, to_slv(PCAP_VERSION_MAJOR, PCAP_VERSION_MAJOR_BYTES)); 
-        hwrite(out_ln, to_slv(PCAP_VERSION_MINOR, PCAP_VERSION_MINOR_BYTES)); 
-        hwrite(out_ln, to_slv(PCAP_ZONE, PCAP_ZONE_BYTES)); 
-        hwrite(out_ln, to_slv(PCAP_SIGFIGS, PCAP_SIGFIGS_BYTES)); 
-        hwrite(out_ln, to_slv(PCAP_SNAP_LEN, PCAP_SNAP_LEN_BYTES)); 
-        hwrite(out_ln, to_slv(PCAP_NETWORK, PCAP_NETWORK_BYTES)); 
+        hwrite(out_ln, PCAP_MAGIC_NUMBER); 
+        hwrite(out_ln, PCAP_VERSION_MAJOR); 
+        hwrite(out_ln, PCAP_VERSION_MINOR); 
+        hwrite(out_ln, PCAP_ZONE); 
+        hwrite(out_ln, PCAP_SIGFIGS); 
+        hwrite(out_ln, PCAP_SNAP_LEN);
+        hwrite(out_ln, PCAP_NETWORK);
         -- catch up read
 
         while (not ENDFILE(compare_file)) loop
