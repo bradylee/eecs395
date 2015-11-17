@@ -20,8 +20,8 @@ use STD.textio.all;
 entity fifo is
 generic
 (
-	constant DWIDTH : integer := 32;
-	constant BUFFER_SIZE : integer := 32
+	constant FIFO_DATA_WIDTH : integer := 32;
+	constant FIFO_BUFFER_SIZE : integer := 32
 );
 port
 (
@@ -30,8 +30,8 @@ port
 	signal reset : in std_logic;
 	signal rd_en : in std_logic;
 	signal wr_en : in std_logic;
-	signal din : in std_logic_vector ((DWIDTH - 1) downto 0);
-	signal dout : out std_logic_vector ((DWIDTH - 1) downto 0);
+	signal din : in std_logic_vector ((FIFO_DATA_WIDTH - 1) downto 0);
+	signal dout : out std_logic_vector ((FIFO_DATA_WIDTH - 1) downto 0);
 	signal full : out std_logic;
 	signal empty : out std_logic
 );
@@ -115,20 +115,23 @@ architecture behavior of fifo is
 		return log;
 	end log2;
 
-	constant NUM_ELEMENTS : integer := (BUFFER_SIZE * 8) / DWIDTH;
+	constant NUM_ELEMENTS : integer := (FIFO_BUFFER_SIZE * 8) / FIFO_DATA_WIDTH;
 	constant ADDR_SIZE : integer := if_cond(log2(NUM_ELEMENTS) >= 1, log2(NUM_ELEMENTS), 1) + 1;
-	type ARRAY_SLV_DWIDTH is array ( natural range <> ) of std_logic_vector ((DWIDTH - 1) downto 0);
-	signal fifo_buf : ARRAY_SLV_DWIDTH (0 to (NUM_ELEMENTS - 1)) := (others => (others => '0'));
-	signal write_addr : std_logic_vector ((ADDR_SIZE - 1) downto 0) := (others => '0');
-	signal read_addr : std_logic_vector ((ADDR_SIZE - 1) downto 0) := (others => '0');
-	signal write_addr_t : std_logic_vector ((ADDR_SIZE - 1) downto 0) := (others => '0');
-	signal read_addr_t : std_logic_vector ((ADDR_SIZE - 1) downto 0) := (others => '0');
-	signal full_t : std_logic := '0';
-	signal empty_t : std_logic := '0';
+	type ARRAY_SLV_FIFO_DATA_WIDTH is array ( natural range <> ) of std_logic_vector ((FIFO_DATA_WIDTH - 1) downto 0);
+	signal fifo_buf : ARRAY_SLV_FIFO_DATA_WIDTH (0 to (NUM_ELEMENTS - 1));
+	signal write_addr : std_logic_vector ((ADDR_SIZE - 1) downto 0);
+	signal read_addr : std_logic_vector ((ADDR_SIZE - 1) downto 0);
+	signal write_addr_t : std_logic_vector ((ADDR_SIZE - 1) downto 0);
+	signal read_addr_t : std_logic_vector ((ADDR_SIZE - 1) downto 0);
+	signal full_t : std_logic;
+	signal empty_t : std_logic;
 
 begin
 
-	p_write_buffer : process ( wr_clk)
+	p_write_buffer : process
+	(
+		wr_clk
+	)
 	begin
 		if ( rising_edge(wr_clk) ) then
 			if ( (wr_en = '1') and (full_t = '0') ) then
@@ -138,7 +141,10 @@ begin
 	end process p_write_buffer;
 
 
-	p_read_buffer : process ( rd_clk)
+	p_read_buffer : process
+	(
+		rd_clk
+	)
 	begin
 		if ( rising_edge(rd_clk) ) then
 			dout <= to01(fifo_buf(to_integer(unsigned(read_addr_t((ADDR_SIZE - 2) downto 0)))));
@@ -146,7 +152,11 @@ begin
 	end process p_read_buffer;
 
 
-	p_write_addr : process ( wr_clk, reset)
+	p_write_addr : process
+	(
+		wr_clk, 
+		reset
+	)
 	begin
 		if ( reset = '1' ) then
 			write_addr <= std_logic_vector(resize(to_unsigned(0, 2), ADDR_SIZE));
@@ -156,7 +166,11 @@ begin
 	end process p_write_addr;
 
 
-	p_read_addr : process ( rd_clk, reset)
+	p_read_addr : process
+	(
+		rd_clk, 
+		reset
+	)
 	begin
 		if ( reset = '1' ) then
 			read_addr <= std_logic_vector(resize(to_unsigned(0, 2), ADDR_SIZE));
@@ -166,7 +180,11 @@ begin
 	end process p_read_addr;
 
 
-	p_empty : process ( rd_clk, reset)
+	p_empty : process
+	(
+		rd_clk, 
+		reset
+	)
 	begin
 		if ( reset = '1' ) then
 			empty <= '1';
