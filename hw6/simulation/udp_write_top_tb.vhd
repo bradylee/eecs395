@@ -5,16 +5,16 @@ use ieee.std_logic_textio.all;
 use std.textio.all;
 use work.constants.all;
 
-entity udp_read_top_tb is
+entity udp_write_top_tb is
     generic
     (
-    constant DATA_IN : string (23 downto 1) := "../scripts/data_in.pcap";
-    constant DATA_OUT : string (23 downto 1) := "../scripts/data_out.txt";
+    constant DATA_IN : string (22 downto 1) := "../scripts/data_in.txt";
+    constant DATA_OUT : string (24 downto 1) := "../scripts/data_out.pcap";
     constant CLOCK_PERIOD : time := 2 ns
 );
 end entity;
 
-architecture behavior of udp_read_top_tb is
+architecture behavior of udp_write_top_tb is
 
     function to_char (std: std_logic_vector)
     return character is
@@ -45,10 +45,8 @@ architecture behavior of udp_read_top_tb is
     signal length : std_logic_vector (UDP_LENGTH_BYTES * BYTE - 1 downto 0);
     signal input_wr_en : std_logic := '0';
     signal output_rd_en : std_logic := '0';
-    signal len_rd_en : std_logic := '0';
     signal input_full : std_logic := '0';
     signal output_empty : std_logic := '0';
-    signal len_empty : std_logic := '0';
 
     -- process sync signals
     signal hold_clock : std_logic := '0';

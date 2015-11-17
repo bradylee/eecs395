@@ -87,10 +87,13 @@ package constants is
             udp_src_port : in std_logic_vector (UDP_SRC_PORT_BYTES * BYTE - 1 downto 0);
             udp_dst_port : in std_logic_vector (UDP_SRC_PORT_BYTES * BYTE - 1 downto 0);
             input_empty : in std_logic;
+            status_empty : in std_logic;
             output_full : in std_logic;
             input_dout : in std_logic_vector (BYTE - 1 downto 0);
+            status_dout : in std_logic_vector (STATUS_WIDTH - 1 downto 0) := (others => '0');
             output_din : out std_logic_vector (BYTE - 1 downto 0);
-            input_rd_en : out  std_logic;
+            input_rd_en : out std_logic;
+            status_rd_en : out std_logic;
             output_wr_en : out std_logic
         );
     end component;
@@ -115,12 +118,16 @@ package constants is
             udp_src_port : in std_logic_vector (UDP_SRC_PORT_BYTES * BYTE - 1 downto 0);
             udp_dst_port : in std_logic_vector (UDP_SRC_PORT_BYTES * BYTE - 1 downto 0);
             input_wr_en : in std_logic;
+            status_wr_en : in std_logic;
             output_rd_en : in std_logic;
             din : in std_logic_vector (DWIDTH - 1 downto 0);
+            status_din : in std_logic_vector (STATUS_WIDTH - 1 downto 0);
             dout : out std_logic_vector (DWIDTH - 1 downto 0);
             input_full : out std_logic;
+            status_full : out std_logic;
             output_empty : out std_logic
         );
     end component;
+
 
 end package;

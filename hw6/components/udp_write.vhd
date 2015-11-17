@@ -20,10 +20,13 @@ entity udp_write is
         udp_src_port : in std_logic_vector (UDP_SRC_PORT_BYTES * BYTE - 1 downto 0);
         udp_dst_port : in std_logic_vector (UDP_SRC_PORT_BYTES * BYTE - 1 downto 0);
         input_empty : in std_logic;
+        status_empty : in std_logic;
         output_full : in std_logic;
         input_dout : in std_logic_vector (BYTE - 1 downto 0);
+        status_dout : in std_logic_vector (STATUS_WIDTH - 1 downto 0) := (others => '0');
         output_din : out std_logic_vector (BYTE - 1 downto 0);
-        input_rd_en : out  std_logic;
+        input_rd_en : out std_logic;
+        status_rd_en : out std_logic;
         output_wr_en : out std_logic
     );
 end entity;
@@ -65,8 +68,6 @@ architecture behavioral of udp_write is
     signal buffer_din, buffer_dout : std_logic_vector (BYTE - 1 downto 0) := (others => '0');
     signal buffer_rd_en, buffer_wr_en : std_logic := '0';
     signal ip_count_o : natural := 0;
-    signal input_status_rd_en : std_logic := '0';
-    signal input_status : std_logic_vector (STATUS_WIDTH - 1 downto 0) := (others => '0'); 
 
 begin
 
@@ -386,25 +387,25 @@ begin
         length_c <= length;
         checksum_c <= checksum;
 
-        input_status_rd_en <= '0';
+        status_rd_en <= '0';
         input_rd_en <= '0';
         buffer_wr_en <= '0';
 
         case (read_state) is
             when init => 
-                if (input_empty = '0') then
-                    input_status_rd_en <= '1';
-                    if (unsigned(input_status) = START_OF_FRAME) then
+                if (status_empty = '0') then
+                    status_rd_en <= '1';
+                    if (unsigned(status_dout) = START_OF_FRAME) then
                         udp_sum_c <= std_logic_vector(unsigned(ip_src_addr) + unsigned(ip_dst_addr) + unsigned(ip_protocol) + unsigned(ip_length) + unsigned(udp_dst_port) + unsigned(udp_src_port));
                         read_next_state <= exec;
                     end if;
                 end if;
 
             when exec =>
-                input_status_rd_en <= '1';
+                status_rd_en <= '1';
                 if (input_empty = '0') then
                     read_next_state <= exec;
-                    if (unsigned(input_status) = END_OF_FRAME) then
+                    if (unsigned(status_dout) = END_OF_FRAME) then
                         read_next_state <= calc_checksum;
                         udp_sum_c <= std_logic_vector(unsigned(udp_sum) + unsigned(length));
                     else
