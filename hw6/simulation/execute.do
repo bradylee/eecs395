@@ -3,7 +3,7 @@ vcom -work work ../components/constants.vhd
 vcom -work work ../components/fifo.vhd
 vcom -work work ../components/udp_write.vhd
 vcom -work work ../components/udp_write_top.vhd
-#vcom -work work udp_read_top_tb.vhd
+vcom -work work udp_write_top_tb.vhd
 
 #vsim +notimingchecks -L work work.udp_read_top_tb -wlf vsim.wlf
 #
