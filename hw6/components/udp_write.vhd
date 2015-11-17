@@ -3,7 +3,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.constants.all;
 
-entity udp_writer is
+entity udp_write is
     generic
     (
         BUFFER_SIZE : natural := 1024
@@ -28,7 +28,7 @@ entity udp_writer is
     );
 end entity;
 
-architecture behavioral of udp_writer is
+architecture behavioral of udp_write is
 
     function add_checksum (sum : std_logic_vector (LONG - 1 downto 0); data : std_logic_vector (BYTE - 1 downto 0); count : natural)
     return std_logic_vector is
@@ -69,6 +69,25 @@ architecture behavioral of udp_writer is
     signal input_status : std_logic_vector (STATUS_WIDTH - 1 downto 0) := (others => '0'); 
 
 begin
+
+    buffer_fifo : fifo
+    generic map
+    (
+        DWIDTH => BYTE,
+        BUFFER_SIZE => BUFFER_SIZE
+    )
+    port map
+    (
+        rd_clk => clock,
+        wr_clk => clock,
+        reset => reset,
+        rd_en => buffer_rd_en,
+        wr_en => buffer_wr_en,
+        din => buffer_din,
+        dout => buffer_dout,
+        full => buffer_full,
+        empty => buffer_empty
+    );
 
     eth_protocol <= std_logic_vector(to_unsigned(IP_PROTOCOL_DEF, ETH_PROTOCOL_BYTES * BYTE));
     ip_version_header <= std_logic_vector(to_unsigned(IP_VERSION_DEF, NIBBLE) & to_unsigned(IP_HEADER_LENGTH_DEF, NIBBLE));
@@ -354,100 +373,100 @@ begin
                     end if;
                 end if;
 
-                when others =>
-                    write_next_state <= init;
+            when others =>
+                write_next_state <= init;
 
-            end case;
-        end process;
+        end case;
+    end process;
 
-        read_input_process : process (read_state, udp_sum, length, ip_src_addr, ip_dst_addr, ip_protocol, ip_length, udp_dst_port, udp_src_port, input_empty, checksum)
-        begin
-            read_next_state <= read_state;
-            udp_sum_c <= udp_sum;
-            length_c <= length;
-            checksum_c <= checksum;
+    read_input_process : process (read_state, udp_sum, length, ip_src_addr, ip_dst_addr, ip_protocol, ip_length, udp_dst_port, udp_src_port, input_empty, checksum)
+    begin
+        read_next_state <= read_state;
+        udp_sum_c <= udp_sum;
+        length_c <= length;
+        checksum_c <= checksum;
 
-            input_status_rd_en <= '0';
-            input_rd_en <= '0';
-            buffer_wr_en <= '0';
+        input_status_rd_en <= '0';
+        input_rd_en <= '0';
+        buffer_wr_en <= '0';
 
-            case (read_state) is
-                when init => 
-                    if (input_empty = '0') then
-                        input_status_rd_en <= '1';
-                        if (unsigned(input_status) = START_OF_FRAME) then
-                            udp_sum_c <= std_logic_vector(unsigned(ip_src_addr) + unsigned(ip_dst_addr) + unsigned(ip_protocol) + unsigned(ip_length) + unsigned(udp_dst_port) + unsigned(udp_src_port));
-                            read_next_state <= exec;
-                        end if;
-                    end if;
-
-                when exec =>
+        case (read_state) is
+            when init => 
+                if (input_empty = '0') then
                     input_status_rd_en <= '1';
-                    if (input_empty = '0') then
+                    if (unsigned(input_status) = START_OF_FRAME) then
+                        udp_sum_c <= std_logic_vector(unsigned(ip_src_addr) + unsigned(ip_dst_addr) + unsigned(ip_protocol) + unsigned(ip_length) + unsigned(udp_dst_port) + unsigned(udp_src_port));
                         read_next_state <= exec;
-                        if (unsigned(input_status) = END_OF_FRAME) then
-                            read_next_state <= calc_checksum;
-                            udp_sum_c <= std_logic_vector(unsigned(udp_sum) + unsigned(length));
-                        else
-                            input_rd_en <= '1';
-                            buffer_wr_en <= '1';
-                            buffer_din <= input_dout;
-                            udp_sum_c <= add_checksum(udp_sum, input_dout, to_integer(unsigned(length)));
-                            length_c <= std_logic_vector(unsigned(length) + 1);
-                        end if;
                     end if;
-
-                    when calc_checksum =>
-                        read_next_state <= calc_checksum;
-                        udp_sum_c <= std_logic_vector(resize(unsigned(udp_sum(LONG - 1 downto WORD)) + unsigned(udp_sum(WORD - 1 downto 0)), udp_sum'length));
-                        if (unsigned(udp_sum(LONG - 1 downto WORD)) = 0) then
-                            read_next_state <= idle;
-                            current_ready_c <= '1';
-                            checksum_c <= not udp_sum(WORD - 1 downto 0);
-                        end if;
-
-                    when idle =>
-                        read_next_state <= idle;
-                        current_ready_c <= '1';
-                        if (current_ack = '1') then
-                            read_next_state <= init;
-                        end if;
-
-                    when others =>
-                        read_next_state <= init;
-
-                end case;
-            end process;
-
-            clock_process : process (clock, reset)
-            begin
-                if (reset = '1') then
-                    write_state <= init;
-                    read_state <= init;
-                    byte_count <= 0;
-                    ip_sum <= (others => '0');
-                    ip_checksum <= (others => '0'); 
-                    udp_length <= (others => '0');
-                    udp_checksum <= (others => '0'); 
-                    udp_sum <= (others => '0'); 
-                    length <= (others => '0'); 
-                    checksum <= (others => '0'); 
-                    current_ack <= '0';
-                    current_ready <= '0';
-                elsif (rising_edge(clock)) then
-                    write_state <= write_next_state; 
-                    read_state <= read_next_state;
-                    byte_count <= byte_count_c;
-                    ip_sum <= ip_sum_c;
-                    ip_checksum <= ip_checksum_c;
-                    udp_length <= udp_length_c; 
-                    udp_checksum <= udp_checksum_c; 
-                    udp_sum <= udp_sum_c; 
-                    length <= length_c; 
-                    checksum <= checksum_c; 
-                    current_ack <= current_ack_c; 
-                    current_ready <= current_ready_c; 
                 end if;
-            end process;
+
+            when exec =>
+                input_status_rd_en <= '1';
+                if (input_empty = '0') then
+                    read_next_state <= exec;
+                    if (unsigned(input_status) = END_OF_FRAME) then
+                        read_next_state <= calc_checksum;
+                        udp_sum_c <= std_logic_vector(unsigned(udp_sum) + unsigned(length));
+                    else
+                        input_rd_en <= '1';
+                        buffer_wr_en <= '1';
+                        buffer_din <= input_dout;
+                        udp_sum_c <= add_checksum(udp_sum, input_dout, to_integer(unsigned(length)));
+                        length_c <= std_logic_vector(unsigned(length) + 1);
+                    end if;
+                end if;
+
+            when calc_checksum =>
+                read_next_state <= calc_checksum;
+                udp_sum_c <= std_logic_vector(resize(unsigned(udp_sum(LONG - 1 downto WORD)) + unsigned(udp_sum(WORD - 1 downto 0)), udp_sum'length));
+                if (unsigned(udp_sum(LONG - 1 downto WORD)) = 0) then
+                    read_next_state <= idle;
+                    current_ready_c <= '1';
+                    checksum_c <= not udp_sum(WORD - 1 downto 0);
+                end if;
+
+            when idle =>
+                read_next_state <= idle;
+                current_ready_c <= '1';
+                if (current_ack = '1') then
+                    read_next_state <= init;
+                end if;
+
+            when others =>
+                read_next_state <= init;
+
+        end case;
+    end process;
+
+    clock_process : process (clock, reset)
+    begin
+        if (reset = '1') then
+            write_state <= init;
+            read_state <= init;
+            byte_count <= 0;
+            ip_sum <= (others => '0');
+            ip_checksum <= (others => '0'); 
+            udp_length <= (others => '0');
+            udp_checksum <= (others => '0'); 
+            udp_sum <= (others => '0'); 
+            length <= (others => '0'); 
+            checksum <= (others => '0'); 
+            current_ack <= '0';
+            current_ready <= '0';
+        elsif (rising_edge(clock)) then
+            write_state <= write_next_state; 
+            read_state <= read_next_state;
+            byte_count <= byte_count_c;
+            ip_sum <= ip_sum_c;
+            ip_checksum <= ip_checksum_c;
+            udp_length <= udp_length_c; 
+            udp_checksum <= udp_checksum_c; 
+            udp_sum <= udp_sum_c; 
+            length <= length_c; 
+            checksum <= checksum_c; 
+            current_ack <= current_ack_c; 
+            current_ready <= current_ready_c; 
+        end if;
+    end process;
 
 end architecture;

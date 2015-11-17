@@ -70,14 +70,41 @@ package constants is
         );
     end component;
 
-    component udp_writer is
+    component udp_write is
         generic
         (
             BUFFER_SIZE : natural := 1024
         );
         port
         (
+            clock : in std_logic;
+            reset : in std_logic;
+            eth_src_addr : in std_logic_vector (ETH_SRC_ADDR_BYTES * BYTE - 1 downto 0);
+            eth_dst_addr : in std_logic_vector (ETH_DST_ADDR_BYTES * BYTE - 1 downto 0);
+            ip_src_addr : in std_logic_vector (IP_SRC_ADDR_BYTES * BYTE - 1 downto 0);
+            ip_dst_addr : in std_logic_vector (IP_DST_ADDR_BYTES * BYTE - 1 downto 0);
+            ip_id : in std_logic_vector (IP_ID_BYTES * BYTE - 1 downto 0);
+            udp_src_port : in std_logic_vector (UDP_SRC_PORT_BYTES * BYTE - 1 downto 0);
+            udp_dst_port : in std_logic_vector (UDP_SRC_PORT_BYTES * BYTE - 1 downto 0);
+            input_empty : in std_logic;
+            output_full : in std_logic;
+            input_dout : in std_logic_vector (BYTE - 1 downto 0);
+            output_din : out std_logic_vector (BYTE - 1 downto 0);
+            input_rd_en : out  std_logic;
+            output_wr_en : out std_logic
+        );
+    end component;
+
+    component udp_write_top is
+        generic
+        (
+            DWIDTH : natural := 8;
+            BUFFER_SIZE : natural := 1024
+        );
+        port
+        (
             input_clk : in std_logic;
+            internal_clk : in std_logic;
             output_clk : in std_logic;
             reset : in std_logic;
             eth_src_addr : in std_logic_vector (ETH_SRC_ADDR_BYTES * BYTE - 1 downto 0);
@@ -87,12 +114,12 @@ package constants is
             ip_id : in std_logic_vector (IP_ID_BYTES * BYTE - 1 downto 0);
             udp_src_port : in std_logic_vector (UDP_SRC_PORT_BYTES * BYTE - 1 downto 0);
             udp_dst_port : in std_logic_vector (UDP_SRC_PORT_BYTES * BYTE - 1 downto 0);
-            input_dout : in std_logic_vector (BYTE - 1 downto 0);
-            output_din : out std_logic_vector (BYTE - 1 downto 0);
-            input_rd_en : in std_logic;
-            output_wr_en : out std_logic;
-            input_empty : in std_logic;
-            output_full : in std_logic
+            input_wr_en : in std_logic;
+            output_rd_en : in std_logic;
+            din : in std_logic_vector (DWIDTH - 1 downto 0);
+            dout : out std_logic_vector (DWIDTH - 1 downto 0);
+            input_full : out std_logic;
+            output_empty : out std_logic
         );
     end component;
 
