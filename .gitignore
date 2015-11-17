@@ -1,0 +1,6 @@
+*zip
+work/
+db/
+incremental_db/
+**/simulation/modelsim/
+transcript

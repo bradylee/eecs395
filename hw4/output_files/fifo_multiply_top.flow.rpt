@@ -1,0 +1,130 @@
+Flow report for fifo_multiply_top
+Tue Nov  3 15:22:11 2015
+Quartus II 64-Bit Version 15.0.0 Build 145 04/22/2015 SJ Web Edition
+
+
+---------------------
+; Table of Contents ;
+---------------------
+  1. Legal Notice
+  2. Flow Summary
+  3. Flow Settings
+  4. Flow Non-Default Global Settings
+  5. Flow Elapsed Time
+  6. Flow OS Summary
+  7. Flow Log
+  8. Flow Messages
+  9. Flow Suppressed Messages
+
+
+
+----------------
+; Legal Notice ;
+----------------
+Copyright (C) 1991-2015 Altera Corporation. All rights reserved.
+Your use of Altera Corporation's design tools, logic functions 
+and other software and tools, and its AMPP partner logic 
+functions, and any output files from any of the foregoing 
+(including device programming or simulation files), and any 
+associated documentation or information are expressly subject 
+to the terms and conditions of the Altera Program License 
+Subscription Agreement, the Altera Quartus II License Agreement,
+the Altera MegaCore Function License Agreement, or other 
+applicable license agreement, including, without limitation, 
+that your use is for the sole purpose of programming logic 
+devices manufactured by Altera and sold by Altera or its 
+authorized distributors.  Please refer to the applicable 
+agreement for further details.
+
+
+
++---------------------------------------------------------------------------------+
+; Flow Summary                                                                    ;
++------------------------------------+--------------------------------------------+
+; Flow Status                        ; Successful - Tue Nov  3 15:22:11 2015      ;
+; Quartus II 64-Bit Version          ; 15.0.0 Build 145 04/22/2015 SJ Web Edition ;
+; Revision Name                      ; fifo_multiply_top                          ;
+; Top-level Entity Name              ; fifo_multiply_top                          ;
+; Family                             ; Cyclone IV E                               ;
+; Device                             ; EP4CE115F29C7                              ;
+; Timing Models                      ; Final                                      ;
+; Total logic elements               ; 6,323 / 114,480 ( 6 % )                    ;
+;     Total combinational functions  ; 4,320 / 114,480 ( 4 % )                    ;
+;     Dedicated logic registers      ; 4,261 / 114,480 ( 4 % )                    ;
+; Total registers                    ; 4261                                       ;
+; Total pins                         ; 106 / 529 ( 20 % )                         ;
+; Total virtual pins                 ; 0                                          ;
+; Total memory bits                  ; 6,144 / 3,981,312 ( < 1 % )                ;
+; Embedded Multiplier 9-bit elements ; 48 / 532 ( 9 % )                           ;
+; Total PLLs                         ; 0 / 4 ( 0 % )                              ;
++------------------------------------+--------------------------------------------+
+
+
++-----------------------------------------+
+; Flow Settings                           ;
++-------------------+---------------------+
+; Option            ; Setting             ;
++-------------------+---------------------+
+; Start date & time ; 11/03/2015 15:19:11 ;
+; Main task         ; Compilation         ;
+; Revision Name     ; fifo_multiply_top   ;
++-------------------+---------------------+
+
+
++----------------------------------------------------------------------------------------------------------------------------+
+; Flow Non-Default Global Settings                                                                                           ;
++-------------------------------------+---------------------------------------+---------------+-------------+----------------+
+; Assignment Name                     ; Value                                 ; Default Value ; Entity Name ; Section Id     ;
++-------------------------------------+---------------------------------------+---------------+-------------+----------------+
+; COMPILER_SIGNATURE_ID               ; 0.144658555101675                     ; --            ; --          ; --             ;
+; EDA_OUTPUT_DATA_FORMAT              ; Vhdl                                  ; --            ; --          ; eda_simulation ;
+; EDA_SIMULATION_TOOL                 ; ModelSim-Altera (VHDL)                ; <None>        ; --          ; --             ;
+; MAX_CORE_JUNCTION_TEMP              ; 85                                    ; --            ; --          ; --             ;
+; MIN_CORE_JUNCTION_TEMP              ; 0                                     ; --            ; --          ; --             ;
+; PARTITION_COLOR                     ; 16764057                              ; --            ; --          ; Top            ;
+; PARTITION_FITTER_PRESERVATION_LEVEL ; PLACEMENT_AND_ROUTING                 ; --            ; --          ; Top            ;
+; PARTITION_NETLIST_TYPE              ; SOURCE                                ; --            ; --          ; Top            ;
+; POWER_BOARD_THERMAL_MODEL           ; None (CONSERVATIVE)                   ; --            ; --          ; --             ;
+; POWER_PRESET_COOLING_SOLUTION       ; 23 MM HEAT SINK WITH 200 LFPM AIRFLOW ; --            ; --          ; --             ;
+; PROJECT_OUTPUT_DIRECTORY            ; output_files                          ; --            ; --          ; --             ;
++-------------------------------------+---------------------------------------+---------------+-------------+----------------+
+
+
++-------------------------------------------------------------------------------------------------------------------------------+
+; Flow Elapsed Time                                                                                                             ;
++---------------------------+--------------+-------------------------+---------------------+------------------------------------+
+; Module Name               ; Elapsed Time ; Average Processors Used ; Peak Virtual Memory ; Total CPU Time (on all processors) ;
++---------------------------+--------------+-------------------------+---------------------+------------------------------------+
+; Analysis & Synthesis      ; 00:00:30     ; 1.0                     ; 1132 MB             ; 00:00:46                           ;
+; Fitter                    ; 00:01:47     ; 1.0                     ; 1381 MB             ; 00:01:47                           ;
+; Assembler                 ; 00:00:05     ; 1.0                     ; 883 MB              ; 00:00:05                           ;
+; TimeQuest Timing Analyzer ; 00:00:14     ; 1.0                     ; 1041 MB             ; 00:00:12                           ;
+; EDA Netlist Writer        ; 00:00:07     ; 1.0                     ; 1175 MB             ; 00:00:07                           ;
+; Total                     ; 00:02:43     ; --                      ; --                  ; 00:02:57                           ;
++---------------------------+--------------+-------------------------+---------------------+------------------------------------+
+
+
++-----------------------------------------------------------------------------------------+
+; Flow OS Summary                                                                         ;
++---------------------------+------------------+------------+------------+----------------+
+; Module Name               ; Machine Hostname ; OS Name    ; OS Version ; Processor type ;
++---------------------------+------------------+------------+------------+----------------+
+; Analysis & Synthesis      ; spectre          ; Arch Linux ; Arch Linux ; x86_64         ;
+; Fitter                    ; spectre          ; Arch Linux ; Arch Linux ; x86_64         ;
+; Assembler                 ; spectre          ; Arch Linux ; Arch Linux ; x86_64         ;
+; TimeQuest Timing Analyzer ; spectre          ; Arch Linux ; Arch Linux ; x86_64         ;
+; EDA Netlist Writer        ; spectre          ; Arch Linux ; Arch Linux ; x86_64         ;
++---------------------------+------------------+------------+------------+----------------+
+
+
+------------
+; Flow Log ;
+------------
+quartus_map --read_settings_files=on --write_settings_files=off fifo_multiply_top -c fifo_multiply_top
+quartus_fit --read_settings_files=off --write_settings_files=off fifo_multiply_top -c fifo_multiply_top
+quartus_asm --read_settings_files=off --write_settings_files=off fifo_multiply_top -c fifo_multiply_top
+quartus_sta fifo_multiply_top -c fifo_multiply_top
+quartus_eda --read_settings_files=off --write_settings_files=off fifo_multiply_top -c fifo_multiply_top
+
+
+

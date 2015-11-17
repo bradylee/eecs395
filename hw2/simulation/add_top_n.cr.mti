@@ -1,0 +1,50 @@
+/home/brady/Programming/fpga/eecs395/hw2/components/add_n_top.vhd {1 {vcom -work work -2002 -explicit -stats=none /home/brady/Programming/fpga/eecs395/hw2/components/add_n_top.vhd
+Model Technology ModelSim ALTERA vcom 10.3d Compiler 2014.10 Oct  7 2014
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package constants
+-- Compiling entity add_n_top
+-- Compiling architecture behavior of add_n_top
+
+} {} {}} /home/brady/Programming/fpga/eecs395/hw2/simulation/add_n_top_tb.vhd {1 {vcom -work work -2002 -explicit -stats=none /home/brady/Programming/fpga/eecs395/hw2/simulation/add_n_top_tb.vhd
+Model Technology ModelSim ALTERA vcom 10.3d Compiler 2014.10 Oct  7 2014
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package std_logic_textio
+-- Loading package constants
+-- Compiling entity add_n_top_tb
+-- Compiling architecture behavior of add_n_top_tb
+
+} {} {}} /home/brady/Programming/fpga/eecs395/hw2/components/constants.vhd {1 {vcom -work work -2002 -explicit -stats=none /home/brady/Programming/fpga/eecs395/hw2/components/constants.vhd
+Model Technology ModelSim ALTERA vcom 10.3d Compiler 2014.10 Oct  7 2014
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Compiling package constants
+
+} {} {}} /home/brady/Programming/fpga/eecs395/hw2/components/sramb.vhd {1 {vcom -work work -2002 -explicit -stats=none /home/brady/Programming/fpga/eecs395/hw2/components/sramb.vhd
+Model Technology ModelSim ALTERA vcom 10.3d Compiler 2014.10 Oct  7 2014
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package constants
+-- Compiling entity sramb
+-- Compiling architecture behavior of sramb
+
+} {} {}} /home/brady/Programming/fpga/eecs395/hw2/components/sram.vhd {1 {vcom -work work -2002 -explicit -stats=none /home/brady/Programming/fpga/eecs395/hw2/components/sram.vhd
+Model Technology ModelSim ALTERA vcom 10.3d Compiler 2014.10 Oct  7 2014
+-- Loading package STANDARD
+-- Loading package TEXTIO
+-- Loading package std_logic_1164
+-- Loading package NUMERIC_STD
+-- Loading package constants
+-- Compiling entity sram
+-- Compiling architecture behavior of sram
+
+} {} {}}
