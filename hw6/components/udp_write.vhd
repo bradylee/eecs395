@@ -109,7 +109,7 @@ begin
         ip_checksum_c <= ip_checksum;
         udp_length_c <= udp_length;
         udp_checksum_c <= udp_checksum;
-        current_ack_c <= current_ack;
+        current_ack_c <= '0';
         current_ready_c <= current_ready;
 
         output_wr_en <= '0';

@@ -42,9 +42,27 @@ package constants is
     constant UDP_LENGTH_BYTES : natural := 2;
     constant UDP_CHECKSUM_BYTES : natural := 2;
 
+    constant PCAP_MAGIC_NUMBER : integer := 16#a1b2c3d4#;
+    constant PCAP_VERSION_MAJOR : natural := 2;
+    constant PCAP_VERSION_MINOR : natural := 4;
+    constant PCAP_ZONE : natural := 0;
+    constant PCAP_SIGFIGS : natural := 0;
+    constant PCAP_SNAP_LEN : natural := 65536;
+    constant PCAP_NETWORK : natural := 1;
+
+    constant PCAP_MAGIC_NUMBER_BYTES : natural := 32;
+    constant PCAP_VERSION_MAJOR_BYTES : natural := 16;
+    constant PCAP_VERSION_MINOR_BYTES : natural := 16;
+    constant PCAP_ZONE_BYTES : natural := 32;
+    constant PCAP_SIGFIGS_BYTES : natural := 32;
+    constant PCAP_SNAP_LEN_BYTES : natural := 32;
+    constant PCAP_NETWORK_BYTES : natural := 32;
+
     constant PACKET_LENGTH : natural := ETH_DST_ADDR_BYTES + ETH_SRC_ADDR_BYTES + ETH_PROTOCOL_BYTES + IP_VERSION_HEADER_BYTES + IP_TYPE_BYTES + IP_LENGTH_BYTES + IP_ID_BYTES + IP_FLAG_BYTES + IP_TIME_BYTES + IP_PROTOCOL_BYTES + IP_CHECKSUM_BYTES + IP_SRC_ADDR_BYTES + IP_DST_ADDR_BYTES + UDP_DST_PORT_BYTES + UDP_SRC_PORT_BYTES + UDP_LENGTH_BYTES + UDP_CHECKSUM_BYTES;
 
     constant IP_PROTOCOL_LENGTH : natural := IP_VERSION_HEADER_BYTES + IP_TYPE_BYTES + IP_LENGTH_BYTES + IP_ID_BYTES + IP_FLAG_BYTES + IP_TIME_BYTES + IP_PROTOCOL_BYTES + IP_CHECKSUM_BYTES + IP_SRC_ADDR_BYTES + IP_DST_ADDR_BYTES;
+
+    constant IP_HEADER_LENGTH : natural := ETH_DST_ADDR_BYTES + ETH_SRC_ADDR_BYTES + ETH_PROTOCOL_BYTES + IP_VERSION_HEADER_BYTES + IP_TYPE_BYTES + IP_LENGTH_BYTES;
 
     type write_state_type is (init, write_eth_dst_addr, write_eth_src_addr, write_eth_protocol, write_ip_version_header, write_ip_type, wait_for_length, write_ip_length, write_ip_id, write_ip_flag, write_ip_time, write_ip_protocol, calc_ip_checksum, write_ip_checksum, write_ip_src_addr, write_ip_dst_addr, write_udp_dst_port, write_udp_src_port, write_udp_length, write_udp_checksum, write_udp_data);
 

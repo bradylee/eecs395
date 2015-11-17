@@ -10,6 +10,7 @@ entity udp_write_top_tb is
     (
     constant DATA_IN : string (22 downto 1) := "../scripts/data_in.txt";
     constant DATA_OUT : string (24 downto 1) := "../scripts/data_out.pcap";
+    constant DATA_COMP : string (23 downto 1) := "../scripts/compare.pcap";
     constant CLOCK_PERIOD : time := 2 ns
 );
 end entity;
@@ -28,7 +29,14 @@ architecture behavior of udp_write_top_tb is
         return std_logic_vector(to_unsigned(character'pos(char), 8));
     end function;
 
+    function to_slv (int: integer; size: natural)
+    return std_logic_vector is
+    begin
+        return std_logic_vector(to_unsigned(int, size));
+    end function;
+
     type raw_file is file of character;
+    type byte_array is array (natural range<>) of std_logic_vector (BYTE - 1 downto 0);
 
     constant DWIDTH : natural := BYTE;
     constant BUFFER_SIZE : natural := 1024;
@@ -124,7 +132,7 @@ begin
         wait; 
     end process;
 
-    write_input_process : process
+    input_process : process
         file input_file : text;
         variable char : std_logic_vector(BYTE - 1 downto 0);
         variable count : natural := 0;
@@ -165,6 +173,7 @@ begin
                     wait until (input_clk = '1');
                 end loop;
             end loop;
+            count := 0;
             status_wr_en <= '0';
             wait until (input_clk = '0');
             status_wr_en <= '1';
@@ -173,83 +182,133 @@ begin
             wait until (input_clk = '0');
             status_wr_en <= '0';
         end loop;
-            file_close (input_file);
-            wait;
-        end process; 
+        file_close (input_file);
+        wait;
+    end process; 
 
-        -- read_output_process : process
-        --     file output_file : raw_file;
-        --     variable char : std_logic_vector (BYTE - 1 downto 0);
-        --     variable count : natural := 0;
-        --     variable ln : line;
-        -- begin
-        --     wait until (start = '1');
-        --     wait until (output_clk = '1');
-        --     wait until (output_clk = '0');
-        --     -- write pcap header
-        --     -- 
-        --     file_open (output_file, DATA_OUT, read_mode);
-        --     while (not ENDFILE(output_file)) loop
-        --         wait until (output_clk = '0');
-        --         wait until (output_clk = '1');
-        --         wait until (output_clk = '0');
-        --         for i in 0 to len loop
-        --             wait until (output_clk = '0');
-        --             output_rd_en <= '0';
-        --             if (output_empty = '0') then
-        --                 output_rd_en <= '1';
-        --                 wait until (output_clk = '1');
-        --                 readline (output_file, ln);
-        --                 hread (ln, char);
-        --                 count := count + 1;
-        --                 if (unsigned(char) /= unsigned(dout)) then
-        --                     read_errors <= read_errors + 1;
-        --                     write (ln, string'("Error at line "));
-        --                     write (ln, count);
-        --                     write (ln, string'(": "));
-        --                     hwrite (ln, char);
-        --                     write (ln, string'(" != "));
-        --                     hwrite (ln, dout);
-        --                     writeline (output, ln);
-        --                 end if;
-        --             else
-        --                 wait until (output_clk = '1');
-        --             end if;
-        --         end loop;
-        --     end loop;
-        --     file_close (output_file);
-        --     done <= '1';
-        --     wait;
-        -- end process; 
+    output_process : process
+        file output_file : raw_file;
+        file compare_file : raw_file;
+        variable out_ln : line;
+        variable in_ln : line;
+        variable out_char : character;
+        variable in_char : character;
+        variable i : natural := 0;
+        variable ip_header_buffer : byte_array (0 to IP_HEADER_LENGTH - 1)  := (others => (others => '0'));
+        variable packet_length : std_logic_vector (IP_LENGTH_BYTES * BYTE - 1 downto 0);
+    begin
+        wait until (start = '1');
+        wait until (output_clk = '1');
+        wait until (output_clk = '0');
+        file_open (output_file, DATA_OUT, write_mode);
+        file_open (compare_file, DATA_COMP, read_mode);
 
-        sync_process : process 
-            variable errors : integer := 0; 
-            variable warnings : integer := 0; 
-            variable start_time : time; 
-            variable end_time : time; 
-            variable ln : line; 
-        begin 
-            wait until (start = '1');
-            start_time := NOW; 
-            write (ln, string'("@ "));
-            write (ln, start_time);
-            write (ln, string'(": Beginnging simultation ..."));
-            writeline (output, ln);
-            wait until (done = '1');
-            end_time := NOW;
-            write (ln, string'("@ "));
-            write (ln, end_time);
-            write (ln, string'(": Simulation completed."));
-            writeline (output, ln);
-            errors := read_errors;
-            write (ln, string'("Total simulation cycle count: ")); 
-            write (ln, (end_time - start_time) / CLOCK_PERIOD);
-            writeline (output, ln);
-            write (ln, string'("Total error count: "));
-            write (ln, errors);
-            writeline (output, ln);
-            hold_clock <= '1';
-            wait; 
-        end process;
+        -- write pcap header
+        hwrite(out_ln, to_slv(PCAP_MAGIC_NUMBER, PCAP_MAGIC_NUMBER_BYTES));
+        hwrite(out_ln, to_slv(PCAP_VERSION_MAJOR, PCAP_VERSION_MAJOR_BYTES)); 
+        hwrite(out_ln, to_slv(PCAP_VERSION_MINOR, PCAP_VERSION_MINOR_BYTES)); 
+        hwrite(out_ln, to_slv(PCAP_ZONE, PCAP_ZONE_BYTES)); 
+        hwrite(out_ln, to_slv(PCAP_SIGFIGS, PCAP_SIGFIGS_BYTES)); 
+        hwrite(out_ln, to_slv(PCAP_SNAP_LEN, PCAP_SNAP_LEN_BYTES)); 
+        hwrite(out_ln, to_slv(PCAP_NETWORK, PCAP_NETWORK_BYTES)); 
+        -- catch up read
+
+        while (not ENDFILE(compare_file)) loop
+        -- get length
+            i := 0;
+            while (i < IP_HEADER_LENGTH) loop
+                output_rd_en <= '0';
+                wait until (output_clk = '0');
+                if (output_empty = '0') then
+                    output_rd_en <= '1';
+                    ip_header_buffer(i) := dout;
+                    i := i + 1;
+                end if;
+            end loop;
+            packet_length := ip_header_buffer(IP_HEADER_LENGTH - 1) & ip_header_buffer(IP_HEADER_LENGTH - 2);
+
+        -- catch up on writing 
+            for i in 0 to IP_HEADER_LENGTH - 1 loop
+                hwrite(out_ln, ip_header_buffer(i));
+        --compare
+            end loop;
+
+        -- finish writing rest of packet
+            i := 0;
+            while (i < unsigned(packet_length) - IP_HEADER_LENGTH) loop
+                output_rd_en <= '0';
+                wait until (output_clk = '0');
+                if (output_empty = '0') then
+                    output_rd_en <= '1';
+                    write(out_ln, dout);
+                --compare
+                    i := i + 1;
+                end if;
+            end loop;
+        end loop;
+        file_close(output_file);
+        file_close(compare_file);
+        done <= '1';
+        wait;
+    end process;
+
+                    --        for i in 0 to len loop
+                    --            wait until (output_clk = '0');
+                    --            output_rd_en <= '0';
+                    --            if (output_empty = '0') then
+                    --                output_rd_en <= '1';
+                    --                wait until (output_clk = '1');
+                    --                readline (output_file, ln);
+                    --                hread (ln, char);
+                    --                 count := count + 1;
+                    --                 if (unsigned(char) /= unsigned(dout)) then
+                    --                     read_errors <= read_errors + 1;
+                    --                     write (ln, string'("Error at line "));
+                    --                     write (ln, count);
+                    --                     write (ln, string'(": "));
+                    --                     hwrite (ln, char);
+                    --                     write (ln, string'(" != "));
+                    --                     hwrite (ln, dout);
+                    --                     writeline (output, ln);
+                    --                 end if;
+                    --             else
+                    --                 wait until (output_clk = '1');
+                    --             end if;
+                    --         end loop;
+                    --     end loop;
+                    --     file_close (output_file);
+                    --     done <= '1';
+                    --     wait;
+                    -- end process; 
+
+    sync_process : process 
+        variable errors : integer := 0; 
+        variable warnings : integer := 0; 
+        variable start_time : time; 
+        variable end_time : time; 
+        variable ln : line; 
+    begin 
+        wait until (start = '1');
+        start_time := NOW; 
+        write (ln, string'("@ "));
+        write (ln, start_time);
+        write (ln, string'(": Beginnging simultation ..."));
+        writeline (output, ln);
+        wait until (done = '1');
+        end_time := NOW;
+        write (ln, string'("@ "));
+        write (ln, end_time);
+        write (ln, string'(": Simulation completed."));
+        writeline (output, ln);
+        errors := read_errors;
+        write (ln, string'("Total simulation cycle count: ")); 
+        write (ln, (end_time - start_time) / CLOCK_PERIOD);
+        writeline (output, ln);
+        write (ln, string'("Total error count: "));
+        write (ln, errors);
+        writeline (output, ln);
+        hold_clock <= '1';
+        wait; 
+    end process;
 
 end architecture;
