@@ -373,7 +373,7 @@ begin
                     buffer_rd_en <= '1';
                     output_din <= buffer_dout;
                     byte_count_c <= byte_count + 1;
-                    if (byte_count = unsigned(UDP_LENGTH) - 1) then
+                    if (byte_count = unsigned(udp_length) - 1) then
                         write_next_state <= init;
                     end if;
                 end if;

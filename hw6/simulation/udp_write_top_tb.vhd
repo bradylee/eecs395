@@ -171,9 +171,9 @@ begin
             status_wr_en <= '1';
             status_din <= std_logic_vector(to_unsigned(START_OF_FRAME, STATUS_WIDTH));
             wait until (input_clk = '1');
-            wait until (input_clk = '0');
-            status_wr_en <= '0';
-            wait until (input_clk = '1');
+            --wait until (input_clk = '0');
+            --status_wr_en <= '0';
+            --wait until (input_clk = '1');
             count := 0;
             while (count < MAX_PACKET_LENGTH and not ENDFILE(input_file)) loop
                 wait until (input_clk = '0');
@@ -186,7 +186,7 @@ begin
                     din <= to_slv(char); 
                     --write(ln, char);
                     --writeline(output, ln);
-                    status_din <= (others => '0');
+                    status_din <= "01";
                     count := count + 1;
                     write(ln, count);
                     write(ln, string'(" "));
