@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <string>
+#include <alsa/asoundlib.h>
 
 #include "audio.h"
 
