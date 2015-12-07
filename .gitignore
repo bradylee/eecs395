@@ -1,6 +1,8 @@
-*zip
+*.zip
 work/
 db/
 incremental_db/
 **/simulation/modelsim/
 transcript
+usrp.dat
+*.swp
