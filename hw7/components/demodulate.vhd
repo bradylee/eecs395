@@ -31,7 +31,8 @@ architecture behavioral of demodulate is
 begin
 
     filter_process : process (state, real_din, imag_din, real_empty, imag_empty)
-        variable r, i : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+        variable r, i : signed (WORD_SIZE - 1 downto 0) := (others => '0');
+        variable angle : signed (WORD_SIZE - 1 downto 0) := (others => '0');
     begin
         next_state <= state;
 
@@ -45,6 +46,8 @@ begin
                 if (real_empty = '0' and imag_empty = '0') then
                     real_prev <= (others => '0');
                     imag_prev <= (others => '0');
+                    r <= (others => '0');
+                    i <= (others => '0');
                     next_state <= exec;
                 end if;
 
@@ -53,10 +56,19 @@ begin
                     real_rd_en <= '1';
                     imag_rd_en <= '1';
 
-                    r = DEQUANTIZE(unsigned(real_din) * unsigned(real_prev)) + DEQUANTIZE(unsigned(imag_din) * unsigned(imag_prev));
-                    i = DEQUANTIZE(unsigned(imag_din) * unsigned(real_prev)) - DEQUANTIZE(unsigned(real_din) * unsigned(imag_prev));
+                    r := signed(DEQUANTIZE(unsigned(real_din) * unsigned(real_prev)) + DEQUANTIZE(unsigned(imag_din) * unsigned(imag_prev)));
+                    i := signed(DEQUANTIZE(unsigned(imag_din) * unsigned(real_prev)) - DEQUANTIZE(unsigned(real_din) * unsigned(imag_prev)));
+                    i := abs(i) + 1;
 
-                    demod_dout <= DEQUANTIZE(gain * QARCTAN(i, r));
+                    if (r >= 0) then
+                        angle = QUAD1 - DEQUANTIZE(QUAD1 * DIV(QUANTIZE(r - i), r + i))
+                    else
+                        angle = QUAD3 - DEQUANTIZE(QUAD3 * DIV(QUANTIZE(r + i), i - r))
+                    end if;
+
+                    demod_dout <= DEQUANTIZE(gain * abs(angle));
+
+                   -- demod_dout <= DEQUANTIZE(gain * QARCTAN(i, r));
 
                 -- QARCTAN
                 -- const int quad1 = QUANTIZE_F(PI / 4.0);

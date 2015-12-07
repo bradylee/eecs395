@@ -22,8 +22,8 @@ entity radio is
         left_dout : out std_logic_vector (WORD_SIZE - 1 downto 0);
         right_dout : out std_logic_vector (WORD_SIZE - 1 downto 0);
         left_wr_en : out std_logic;
-        right_wr_en : out std_logic;
-);
+        right_wr_en : out std_logic
+    );
 end entity;
 
 architecture structural of radio is
@@ -60,6 +60,12 @@ architecture structural of radio is
     signal right_emph : std_logic_vector (WORD_SIZE - 1 downto 0);
     signal left_deemph : std_logic_vector (WORD_SIZE - 1 downto 0);
     signal right_deemph : std_logic_vector (WORD_SIZE - 1 downto 0);
+    signal left_output_din : std_logic_vector (WORD_SIZE - 1 downto 0);
+    signal left_output_empty, left_output_full : std_logic;
+    signal left_output_rd_en, left_output_wr_en : std_logic;
+    signal right_output_din : std_logic_vector (WORD_SIZE - 1 downto 0);
+    signal right_output_empty, right_output_full : std_logic;
+    signal right_output_rd_en, right_output_wr_en : std_logic;
 begin
 
     input_read : read_iq
@@ -135,7 +141,7 @@ begin
         imag_rd_en => q_rd_en,
         real_dout => i_filtered,
         imag_dout => q_filtered
-        -- wr_en
+    -- wr_en
     );
 
     demodulator : demodulate
@@ -451,12 +457,12 @@ begin
         clock => clock,
         reset => reset,
         volume => volume,
-        din => _din,
-        empty => _empty,
-        full => left_full,
-        rd_en => _rd_en,
-        dout => left_dout,
-        wr_en => left_wr_en
+        din => left_deemph,
+        empty => '0',
+        full => left_output_full,
+        rd_en => '-',
+        dout => left_output_din,
+        wr_en => left_output_wr_en
     );
 
     gain_right : gain
@@ -465,12 +471,50 @@ begin
         clock => clock,
         reset => reset,
         volume => volume,
-        din => _din,
-        empty => _empty,
-        full => right_full,
-        rd_en => _rd_en,
+        din => right_deemph,
+        empty => '0',
+        full => right_output_full,
+        rd_en => '-',
+        dout => right_output_din,
+        wr_en => right_output_wr_en
+    );
+
+    left_output_buffer : fifo
+    generic map
+    (
+        DWIDTH => WORD_SIZE,
+        BUFFER_SIZE => BUFFER_SIZE
+    )
+    port map
+    (
+        rd_clk => clock,
+        wr_clk => clock,
+        reset => reset,
+        rd_en => left_output_rd_en,
+        wr_en => left_output_wr_en,
+        din => demodulated,
+        dout => left_dout,
+        full => left_output_full,
+        empty => left_output_empty
+    );
+
+    right_output_buffer : fifo
+    generic map
+    (
+        DWIDTH => WORD_SIZE,
+        BUFFER_SIZE => BUFFER_SIZE
+    )
+    port map
+    (
+        rd_clk => clock,
+        wr_clk => clock,
+        reset => reset,
+        rd_en => right_output_rd_en,
+        wr_en => right_output_wr_en,
+        din => right_output_din,
         dout => right_dout,
-        wr_en => right_wr_en
+        full => right_output_full,
+        empty => right_output_empty
     );
 
 end architecture;
