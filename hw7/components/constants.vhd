@@ -11,12 +11,6 @@ package constants is
     type arith_type is (add, subtract, multiply, divide);
     type standard_state_type is (init, exec);
 
-    function QUANTIZE (n : std_logic_vector) return std_logic_vector;
-    function QUANTIZE (n : unsigned) return unsigned;
-    function DEQUANTIZE (n : std_logic_vector) return std_logic_vector;
-    function DEQUANTIZE (n : unsigned) return unsigned;
-
-
     -- Deemphasis IIR Filter Coefficients: 
     constant IIR_COEFF_TAPS : natural := 2;
     --constant IIR_Y_COEFFS quant_array (0 to _COEFF_TAPS) := {QUANTIZE_F(0.0f)", QUANTIZE_F((W_PP - 1.0f) / (W_PP + 1.0f))};
@@ -74,59 +68,4 @@ package constants is
     x"ffffff76", x"ffffff87", x"ffffff9f", x"ffffffbb", x"ffffffd7", x"ffffffee", x"ffffffff", x"00000008",
     x"0000000c", x"0000000b", x"00000008", x"00000004", x"00000002", x"00000000", x"00000000", x"ffffffff");
 
-
-    component fifo is
-        generic
-        (
-            constant DWIDTH : integer := 32;
-            constant BUFFER_SIZE : integer := 32
-        );
-        port
-        (
-            signal rd_clk : in std_logic;
-            signal wr_clk : in std_logic;
-            signal reset : in std_logic;
-            signal rd_en : in std_logic;
-            signal wr_en : in std_logic;
-            signal din : in std_logic_vector ((DWIDTH - 1) downto 0);
-            signal dout : out std_logic_vector ((DWIDTH - 1) downto 0);
-            signal full : out std_logic;
-            signal empty : out std_logic
-        );
-    end component fifo;
-
 end package;
-
-package body constants is
-
-    function QUANTIZE (n : std_logic_vector) return std_logic_vector is
-    begin
-        return std_logic_vector(DEQUANTIZE(unsigned(n)));
-    end function;
-
-    function QUANTIZE (n : unsigned) return unsigned is
-    begin
-        return resize(n sll FRAC_BITS, WORD_SIZE);
-    end function;
-
-    function DEQUANTIZE (n : std_logic_vector) return std_logic_vector is
-    begin
-        return std_logic_vector(DEQUANTIZE(unsigned(n)));
-    end function;
-
-    function DEQUANTIZE (n : unsigned) return unsigned is
-    begin
-        return resize(n srl FRAC_BITS, WORD_SIZE);
-    end function;
-
---function QUANT_MUL (std_logic_vector l, std_logic_vector r) return std_logic_vector is
---begin
---    return std_logic_vector(to_unsigned(to_integer(unsigned(l)) * to_integer(unsigned(r)), BITS) srl FRAC_BITS)
---end function;
-
---function QUANT_DIV (std_logic_vector l, std_logic_vector r) return std_logic_vector is
---begin
---    return std_logic_vector(to_unsigned(to_integer(unsigned(l) sll FRAC_BITS) / to_integer(unsigned(r)), WORD_SIZE))
---end function;
-
-end package body;

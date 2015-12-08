@@ -279,23 +279,15 @@ begin
         empty => pilot_filtered_empty
     );
 
-    -- need to make separate module
-    squarer : arithmetic
-    generic map
-    (
-        ACTION => multiply
-    )
+    squarer : square 
     port map
     (
         clock => clock,
         reset => reset,
         x_din => pilot_filtered,
-        y_din => pilot_filtered,
         x_empty => pilot_filtered_empty,
-        y_empty => pilot_filtered_empty,
         z_full => pilot_multiplied_full,
         x_rd_en => pilot_filtered_rd_en,
-        y_rd_en => pilot_filtered_rd_en,
         z_dout => pilot_squared_din,
         z_wr_en => pilot_squared_wr_en
     );
@@ -414,11 +406,7 @@ begin
         empty => left_band_empty
     );
 
-    multiplier : arithmetic
-    generic map
-    (
-        ACTION => multiply
-    )
+    multiplier : multiply 
     port map
     (
         clock => clock,
@@ -568,10 +556,6 @@ begin
     );
 
     adder_subtractor : addsub
-    generic map
-    (
-        ACTION => add
-    )
     port map
     (
         clock => clock,
@@ -588,26 +572,6 @@ begin
         left_wr_en => left_emph_wr_en
         right_wr_en => left_emph_wr_en
     );
-
-   -- subtractor : arithmetic
-   -- generic map
-   -- (
-   --     ACTION => subtract 
-   -- )
-   -- port map
-   -- (
-   --     clock => clock,
-   --     reset => reset,
-   --     x_din => left_low,
-   --     y_din => right_low,
-   --     x_empty => left_low_rd_en,
-   --     y_empty => ,
-   --     z_full => '0',
-   --     x_rd_en => '-',
-   --     y_rd_en => '-',
-   --     z_dout => right_emph,
-   --     z_wr_en => '-'
-   -- );
 
     left_emph_buffer : fifo
     generic map
