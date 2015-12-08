@@ -244,8 +244,7 @@ begin
     pilot_filter : fir
     generic map
     (
-        TAPS => BP_PILOT_COEFF_TAPS,
-        DECIMATION => DECIMATION,
+        TAPS => BP_PILOT_COEFF_TAPS
     )
     port map
     (
@@ -314,8 +313,7 @@ begin
     pilot_squared_filter : fir
     generic map
     (
-        TAPS => HP_COEFF_TAPS,
-        DECIMATION => DECIMATION,
+        TAPS => HP_COEFF_TAPS
     )
     port map
     (
@@ -371,8 +369,7 @@ begin
     left_band_filter : fir
     generic map
     (
-        TAPS => BP_LMR_COEFF_TAPS,
-        DECIMATION => DECIMATION,
+        TAPS => BP_LMR_COEFF_TAPS
     )
     port map
     (
@@ -441,11 +438,11 @@ begin
         empty => left_multiplied_empty
     );
 
-    left_low_filter : fir
+    left_low_filter : fir_decimated
     generic map
     (
         TAPS => AUDIO_LMR_COEFF,
-        DECIMATION => DECIMATION,
+        DECIMATION => AUDIO_DECIMATION,
     )
     port map
     (
@@ -498,30 +495,11 @@ begin
         empty => right_channel_empty
     );
 
-    right_channel_buffer : fifo
-    generic map
-    (
-        DWIDTH => WORD_SIZE,
-        BUFFER_SIZE => BUFFER_SIZE
-    )
-    port map
-    (
-        rd_clk => clock,
-        wr_clk => clock,
-        reset => reset,
-        rd_en => right_channel_rd_en,
-        wr_en => right_channel_wr_en,
-        din => right_channel_din,
-        dout => right_channel,
-        full => right_channel_full,
-        empty => right_channel_empty
-    );
-
-    right_low_filter : fir
+    right_low_filter : fir_decimated
     generic map
     (
         TAPS => AUDIO_LPR_COEFFS,
-        DECIMATION => DECIMATION,
+        DECIMATION => AUDIO_DECIMATION,
     )
     port map
     (

@@ -8,8 +8,7 @@ package constants is
     constant FRAC_BITS : natural := 10;
 
     type quant_array is array (natural range <>) of std_logic_vector (WORD_SIZE - 1 downto 0); 
-    type arith_type is (add, subtract, multiply, divide);
-    type standard_state_type is (init, exec);
+    type standard_state_type is (init, exec, idle, term);
 
     -- Deemphasis IIR Filter Coefficients: 
     constant IIR_COEFF_TAPS : natural := 2;

@@ -4,10 +4,6 @@ use ieee.numeric_std.all;
 use work.constants.all;
 
 entity demodulate is
-    --generic
-    --(
-    --    GAIN : natural := 20 -- TODO: not correct default
-    --);
     port 
     (
         clock : in std_logic;
@@ -67,30 +63,6 @@ begin
                     end if;
 
                     demod_dout <= DEQUANTIZE(gain * abs(angle));
-
-                   -- demod_dout <= DEQUANTIZE(gain * QARCTAN(i, r));
-
-                -- QARCTAN
-                -- const int quad1 = QUANTIZE_F(PI / 4.0);
-                -- const int quad3 = QUANTIZE_F(3.0 * PI / 4.0);
-
-                -- int abs_y = abs(y) + 1;
-                -- int angle = 0;
-                -- int r = 0;
-
-                -- if ( x >= 0 ) 
-                -- {
-                -- r = QUANTIZE_I(x - abs_y) / (x + abs_y);
-                -- angle = quad1 - DEQUANTIZE(quad1 * r);
-                -- } 
-                -- else 
-                -- {
-                -- r = QUANTIZE_I(x + abs_y) / (abs_y - x);
-                -- angle = quad3 - DEQUANTIZE(quad1 * r);
-                -- }
-
-                -- return ((y < 0) ? -angle : angle);     // negate if in quad III or IV
-
                 end if;
 
             when others =>

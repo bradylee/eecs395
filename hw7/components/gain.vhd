@@ -14,11 +14,11 @@ entity gain is
         reset : in std_logic;
         volume : in integer;
         din : in std_logic_vector (WORD_SIZE - 1 downto 0);
-        empty : in std_logic;
+        in_empty : in std_logic;
         full : in std_logic;
-        rd_en : out std_logic;
+        in_rd_en : out std_logic;
         dout : out std_logic_vector (WORD_SIZE - 1 downto 0);
-        wr_en : out std_logic
+        out_wr_en : out std_logic
     );
 end entity;
 
@@ -26,12 +26,12 @@ architecture behavioral of gain is
     signal state, next_state : standard_state_type := init;
 begin
 
-    gain_process : process (state, din, in_empty)
+    gain_process : process (state, din, in_empty, out_full)
     begin
         next_state <= state;
 
-        rd_en <= '0';
-        wr_en <= '0';
+        in_rd_en <= '0';
+        out_wr_en <= '0';
         dout <= (others => '0');
 
         case (state) is
@@ -41,10 +41,10 @@ begin
                 end if;
 
             when exec =>
-                if (in_empty = '0') then
-                    rd_en <= '1';
+                if (in_empty = '0' and out_full = '0') then
+                    in_rd_en <= '1';
                     dout <= std_logic_vector(DEQUANTIZE(unsigned(din) * volume) sll (MYSTERY - FRAC_BITS));
-                    wr_en <= '1';
+                    out_wr_en <= '1';
                 end if;
 
             when others =>

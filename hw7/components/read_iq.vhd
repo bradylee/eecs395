@@ -21,13 +21,14 @@ entity read_iq is
 end entity;
 
 architecture behavioral of read_iq is
-    type read_state_type is (read_i, read_q);
+    type read_state_type is (init, read_i, read_q);
     signal state, next_state : read_state_type := read_i;
 begin
 
-    read_process : process (state)
+    read_process : process (state, iq_din, iq_empty, i_full, q_full)
     begin
         next_state <= state;
+
         iq_rd_en <= '0';
         i_wr_en <= '0';
         q_wr_en <= '0';
@@ -35,6 +36,11 @@ begin
         q_dout <= (others => '0');
 
         case (state) is
+            when init => 
+                if (iq_empty = '0') then
+                    next_state <= read_i;
+                end if;
+
             when read_i =>
                 if (iq_empty = '0' and i_full = '0') then
                     iq_rd_en <= '1';
@@ -52,7 +58,7 @@ begin
                 end if;
 
             when others =>
-                next_state <= read_i;
+                next_state <= init;
 
         end case;
     end process;
@@ -60,7 +66,7 @@ begin
     clock_process : process (clock, reset)
     begin 
         if (reset = '1') then
-            state <= read_i;
+            state <= init;
         elsif (rising_edge(clock)) then
             state <= next_state;
         end if;
