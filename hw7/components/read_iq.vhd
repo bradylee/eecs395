@@ -23,11 +23,14 @@ entity read_iq is
 end entity;
 
 architecture behavioral of read_iq is
-    type read_state_type is (init, read_i, read_q);
-    signal state, next_state : read_state_type := read_i;
+    signal state, next_state : standard_state_type := init;
 begin
 
     read_process : process (state, iq_din, iq_empty, i_full, q_full)
+        variable i : std_logic_vector (WORD_SIZE - 1 downto 0);
+        variable q : std_logic_vector (WORD_SIZE - 1 downto 0);
+        constant SHORT : natural := WORD_SIZE/2;
+        constant BYTE : natural := SHORT/2;
     begin
         next_state <= state;
 
@@ -40,23 +43,26 @@ begin
         case (state) is
             when init => 
                 if (iq_empty = '0') then
-                    next_state <= read_i;
+                    next_state <= exec;
                 end if;
 
-            when read_i =>
-                if (iq_empty = '0' and i_full = '0') then
+            when exec =>
+                if (iq_empty = '0' and i_full = '0' and q_full = '0') then
                     iq_rd_en <= '1';
-                    i_dout <= QUANTIZE(iq_din);
+
+                    -- read i
+                    i(BYTE*2 - 1 downto BYTE) := iq_din(BYTE*3 - 1 downto BYTE*2);
+                    i(BYTE - 1 downto 0) := iq_din(BYTE*4 - 1 downto BYTE*3);
+                    i(WORD_SIZE - 1 downto SHORT) := (others => i(SHORT - 1)); -- sign extend
+                    i_dout <= QUANTIZE(i);
                     i_wr_en <= '1';
-                    next_state <= read_q;
-                end if;
 
-            when read_q =>
-                if (iq_empty = '0' and q_full = '0') then
-                    iq_rd_en <= '1';
-                    q_dout <= QUANTIZE(iq_din);
+                    -- read q
+                    q(BYTE*2 - 1 downto BYTE) := iq_din(BYTE - 1 downto 0);
+                    q(BYTE - 1 downto 0) := iq_din(BYTE*2 - 1 downto BYTE);
+                    q(WORD_SIZE - 1 downto SHORT) := (others => q(SHORT - 1)); -- sign extend
+                    q_dout <= QUANTIZE(q);
                     q_wr_en <= '1';
-                    next_state <= read_i;
                 end if;
 
             when others =>

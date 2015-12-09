@@ -80,13 +80,12 @@ begin
                 if (real_empty = '0') then
                     real_rd_en <= '1';
                     imag_rd_en <= '1';
+                    real_prev_c <= real_din;
+                    imag_prev_c <= imag_din;
 
                     r := signed(DEQUANTIZE(signed(real_din) * signed(real_prev)) + DEQUANTIZE(signed(imag_din) * signed(imag_prev)));
                     i := signed(DEQUANTIZE(signed(imag_din) * signed(real_prev)) - DEQUANTIZE(signed(real_din) * signed(imag_prev)));
                     i := abs(i) + 1;
-
-                    real_prev_c <= real_din;
-                    imag_prev_c <= imag_din;
 
                     if (r >= 0) then
                         --angle = QUAD1 - DEQUANTIZE(QUAD1 * DIV(QUANTIZE(r - i), r + i))

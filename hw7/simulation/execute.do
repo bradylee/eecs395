@@ -17,15 +17,31 @@ vcom -work work ../components/demodulate.vhd
 vcom -work work ../components/radio.vhd
 vcom -work work radio_tb.vhd
 
-#vsim +notimingchecks -L work work.udp_write_top_tb -wlf vsim.wlf
+vsim +notimingchecks -L work work.radio_tb -wlf vsim.wlf
 
-#add wave -noupdate -group TEST -radix hexadecimal /udp_write_top_tb/*
-#add wave -noupdate -group TOP -radix hexadecimal /udp_write_top_tb/top_inst/*
-#add wave -noupdate -group WRITER -radix hexadecimal /udp_write_top_tb/top_inst/writer/*
-#add wave -noupdate -group INPUT -radix hexadecimal /udp_write_top_tb/top_inst/input_fifo/*
-#add wave -noupdate -group OUTPUT -radix hexadecimal /udp_write_top_tb/top_inst/output_fifo/*
-#add wave -noupdate -group STATUS -radix hexadecimal /udp_write_top_tb/top_inst/status_fifo/*
+add wave -noupdate -group TEST_BENCH -radix hexadecimal /radio_tb/*
+add wave -noupdate -expand -group TOP_LEVEL -radix hexadecimal /radio_tb/top_inst/*
+add wave -noupdate -group INPUT_READ -radix hexadecimal /radio_tb/top_inst/input_read/*
+add wave -noupdate -group CHANNEL_FILTER -radix hexadecimal /radio_tb/top_inst/channel_filter/*
+add wave -noupdate -group DEMODULATOR -radix hexadecimal /radio_tb/top_inst/demodulator/*
+add wave -noupdate -group PILOT_FILTER -radix hexadecimal /radio_tb/top_inst/pilot_filter/*
+add wave -noupdate -group SQUARER -radix hexadecimal /radio_tb/top_inst/squarer/*
+add wave -noupdate -group PILOT_SQUARED_FILTER -radix hexadecimal /radio_tb/top_inst/pilot_squared_filter/*
+add wave -noupdate -group LEFT_BAND_FILTER -radix hexadecimal /radio_tb/top_inst/left_band_filter/*
+add wave -noupdate -group MULTIPLIER -radix hexadecimal /radio_tb/top_inst/multiplier/*
+add wave -noupdate -group LEFT_LOW_FILTER -radix hexadecimal /radio_tb/top_inst/left_low_filter/*
+add wave -noupdate -group RIGHT_LOW_FILTER -radix hexadecimal /radio_tb/top_inst/right_low_filter/*
+add wave -noupdate -group ADDER_SUBTRACTOR -radix hexadecimal /radio_tb/top_inst/adder_subtractor/*
+add wave -noupdate -group DEEMPHASIZE_LEFT -radix hexadecimal /radio_tb/top_inst/deemphasize_left/*
+add wave -noupdate -group DEEMPHASIZE_RIGHT -radix hexadecimal /radio_tb/top_inst/deemphasize_right/*
+add wave -noupdate -group GAIN_LEFT -radix hexadecimal /radio_tb/top_inst/gain_left/*
+add wave -noupdate -group GAIN_RIGHT -radix hexadecimal /radio_tb/top_inst/gain_right/*
 
 #run -all
-#run 50 ns
+run 100 ns
+
+configure wave -namecolwidth 300
+configure wave -valuecolwidth 100
+configure wave -timelineunits ns
+WaveRestoreZoom {0 ns} {75 ns}
 
