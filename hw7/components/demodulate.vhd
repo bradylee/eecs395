@@ -40,13 +40,22 @@ architecture behavioral of demodulate is
     signal q, q_c : signed (WORD_SIZE - 1 downto 0) := (others => '0');
 begin
 
-    demod_process : process (state, real_din, imag_din, real_empty, imag_empty)
+    demod_process : process (state, real_prev, imag_prev, dividend, divisor, quotient, angle, a, b, q, real_din, imag_din, real_empty, imag_empty, demod_full)
         variable r, i : signed (WORD_SIZE - 1 downto 0) := (others => '0');
         variable dividend_v, divisor_v : signed (WORD_SIZE - 1 downto 0) := (others => '0');
         variable p : integer := 0;
         variable sign : std_logic := '0';
     begin
         next_state <= state;
+        real_prev_c <= real_prev;
+        imag_prev_c <= imag_prev;
+        dividend_c <= dividend;
+        divisor_c <= divisor;
+        quotient_c <= quotient;
+        angle_c <= angle;
+        a_c <= a;
+        b_c <= b;
+        q_c <= q;
 
         real_rd_en <= '0';
         imag_rd_en <= '0';
@@ -114,7 +123,7 @@ begin
                     a_c <= a - (b sll p);
                 else
                     quotient_c <= q; 
-                    sign := a(WORD_SIZE - 1) xor b(WORD_SIZE - 1);
+                    sign := dividend(WORD_SIZE - 1) xor divisor(WORD_SIZE - 1);
                     if (sign = '1') then
                         quotient_c <= -q; 
                     end if;

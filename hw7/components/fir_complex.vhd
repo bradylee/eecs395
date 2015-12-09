@@ -31,8 +31,8 @@ end entity;
 
 architecture behavioral of fir_complex is
     signal state, next_state : standard_state_type := init;
-    signal real_buffer, real_buffer_c : quant_array (0 to TAPS - 1);
-    signal imag_buffer, imag_buffer_c : quant_array (0 to TAPS - 1);
+    signal real_buffer, real_buffer_c : quant_array (0 to TAPS - 1) := (others => (others => '0'));
+    signal imag_buffer, imag_buffer_c : quant_array (0 to TAPS - 1) := (others => (others => '0'));
 begin
 
     filter_process : process (state, real_buffer, imag_buffer, real_din, imag_din, real_in_empty, imag_in_empty, real_out_full, imag_out_full)
@@ -49,6 +49,9 @@ begin
         real_dout <= (others => '0');
         imag_dout <= (others => '0');
 
+        sum_real := (others => '0');
+        sum_imag := (others => '0');
+
         case (state) is
             when init =>
                 if (real_in_empty = '0' and imag_in_empty = '0') then
@@ -59,7 +62,7 @@ begin
                 if (real_in_empty = '0' and imag_in_empty = '0' and real_out_full = '0' and imag_out_full = '0') then
                     real_in_rd_en <= '1';
                     imag_in_rd_en <= '1';
-                    for i in TAPS - 1 to 1 loop
+                    for i in TAPS - 1 downto 1 loop
                         -- shift buffers
                         real_buffer_c(i) <= real_buffer(i - 1);
                         imag_buffer_c(i) <= imag_buffer(i - 1);

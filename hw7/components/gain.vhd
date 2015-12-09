@@ -28,7 +28,7 @@ architecture behavioral of gain is
     signal state, next_state : standard_state_type := init;
 begin
 
-    gain_process : process (state, din, in_empty, out_full)
+    gain_process : process (state, din, in_empty, out_full, volume)
     begin
         next_state <= state;
 

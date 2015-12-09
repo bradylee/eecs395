@@ -9,120 +9,143 @@ use work.components.all;
 entity radio is
     generic
     (
-        I_BUFFER_SIZE : natural := 64;
-        Q_BUFFER_SIZE : natural := 64;
-        I_FILTERED_BUFFER_SIZE : natural := 64;
-        Q_FILTERED_BUFFER_SIZE : natural := 64;
-        PRE_PILOT_BUFFER_SIZE : natural := 64;
-        PILOT_FILTERED_BUFFER_SIZE : natural := 64;
-        PILOT_SQUARED_BUFFER_SIZE : natural := 64;
-        PILOT_BUFFER_SIZE : natural := 64;
-        LEFT_CHANNEL_BUFFER_SIZE : natural := 64;
-        LEFT_BAND_BUFFER_SIZE : natural := 64;
-        LEFT_MULTIPLIED_BUFFER_SIZE : natural := 64;
-        LEFT_LOW_BUFFER_SIZE : natural := 64;
-        RIGHT_CHANNEL_BUFFER_SIZE : natural := 64;
-        RIGHT_LOW_BUFFER_SIZE : natural := 64;
-        LEFT_EMPH_BUFFER_SIZE : natural := 64;
-        RIGHT_EMPH_BUFFER_SIZE : natural := 64;
-        LEFT_DEEMPH_BUFFER_SIZE : natural := 64;
-        RIGHT_DEEMPH_BUFFER_SIZE : natural := 64;
-        LEFT_GAIN_BUFFER_SIZE : natural := 64;
-        RIGHT_GAIN_BUFFER_SIZE : natural := 64
-);
-port 
-(
-    clock : in std_logic;
-    reset : in std_logic;
-    volume : in integer;
-    signal_din : in std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal_empty : in std_logic;
-    left_rd_en : in std_logic;
-    right_rd_en : in std_logic;
-    left : out std_logic_vector (WORD_SIZE - 1 downto 0);
-    right : out std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal_rd_en : out std_logic;
-    left_empty : out std_logic;
-    right_empty : out std_logic
-);
+        INPUT_BUFFER_SIZE : natural := 16;
+        I_BUFFER_SIZE : natural := 16;
+        Q_BUFFER_SIZE : natural := 16;
+        I_FILTERED_BUFFER_SIZE : natural := 16;
+        Q_FILTERED_BUFFER_SIZE : natural := 16;
+        PRE_PILOT_BUFFER_SIZE : natural := 16;
+        PILOT_FILTERED_BUFFER_SIZE : natural := 16;
+        PILOT_SQUARED_BUFFER_SIZE : natural := 16;
+        PILOT_BUFFER_SIZE : natural := 16;
+        LEFT_CHANNEL_BUFFER_SIZE : natural := 16;
+        LEFT_BAND_BUFFER_SIZE : natural := 16;
+        LEFT_MULTIPLIED_BUFFER_SIZE : natural := 16;
+        LEFT_LOW_BUFFER_SIZE : natural := 16;
+        RIGHT_CHANNEL_BUFFER_SIZE : natural := 16;
+        RIGHT_LOW_BUFFER_SIZE : natural := 16;
+        LEFT_EMPH_BUFFER_SIZE : natural := 16;
+        RIGHT_EMPH_BUFFER_SIZE : natural := 16;
+        LEFT_DEEMPH_BUFFER_SIZE : natural := 16;
+        RIGHT_DEEMPH_BUFFER_SIZE : natural := 16;
+        LEFT_GAIN_BUFFER_SIZE : natural := 16;
+        RIGHT_GAIN_BUFFER_SIZE : natural := 16
+    );
+    port 
+    (
+        clock : in std_logic;
+        reset : in std_logic;
+        volume : in integer;
+        din : in std_logic_vector (WORD_SIZE - 1 downto 0);
+        input_wr_en : in std_logic;
+        left_rd_en : in std_logic;
+        right_rd_en : in std_logic;
+        input_full : out std_logic;
+        left : out std_logic_vector (WORD_SIZE - 1 downto 0);
+        right : out std_logic_vector (WORD_SIZE - 1 downto 0);
+        left_empty : out std_logic;
+        right_empty : out std_logic
+    );
 end entity;
 
 architecture structural of radio is
-    signal i_din, i : std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal i_empty, i_full : std_logic;
-    signal i_rd_en, i_wr_en : std_logic;
-    signal q_din, q : std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal q_empty, q_full : std_logic;
-    signal q_rd_en, q_wr_en : std_logic;
-    signal i_filtered_din, i_filtered : std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal i_filtered_empty, i_filtered_full : std_logic;
-    signal i_filtered_rd_en, i_filtered_wr_en : std_logic;
-    signal q_filtered_din, q_filtered : std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal q_filtered_empty, q_filtered_full : std_logic;
-    signal q_filtered_rd_en, q_filtered_wr_en : std_logic;
-    signal demodulated : std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal demod_full : std_logic;
-    signal demod_wr_en : std_logic;
-    signal pre_pilot : std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal pre_pilot_empty, pre_pilot_full : std_logic;
-    signal pre_pilot_rd_en : std_logic;
-    signal pilot_filtered_din, pilot_filtered : std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal pilot_filtered_empty, pilot_filtered_full : std_logic;
-    signal pilot_filtered_rd_en, pilot_filtered_wr_en : std_logic;
-    signal pilot_squared_din, pilot_squared : std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal pilot_squared_empty, pilot_squared_full : std_logic;
-    signal pilot_squared_rd_en, pilot_squared_wr_en : std_logic;
-    signal pilot_din, pilot : std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal pilot_empty, pilot_full : std_logic;
-    signal pilot_rd_en, pilot_wr_en : std_logic;
-    signal left_channel : std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal left_channel_empty, left_channel_full : std_logic;
-    signal left_channel_rd_en : std_logic;
-    signal left_band_din, left_band : std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal left_band_empty, left_band_full : std_logic;
-    signal left_band_rd_en, left_band_wr_en : std_logic;
-    signal left_multiplied_din, left_multiplied : std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal left_multiplied_empty, left_multiplied_full : std_logic;
-    signal left_multiplied_rd_en, left_multiplied_wr_en : std_logic;
-    signal left_low_din, left_low : std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal left_low_empty, left_low_full : std_logic;
-    signal left_low_rd_en, left_low_wr_en : std_logic;
-    signal right_channel : std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal right_channel_empty, right_channel_full : std_logic;
-    signal right_channel_rd_en : std_logic;
-    signal right_low_din, right_low : std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal right_low_empty, right_low_full : std_logic;
-    signal right_low_rd_en, right_low_wr_en : std_logic;
-    signal left_emph_din, left_emph : std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal left_emph_empty, left_emph_full : std_logic;
-    signal left_emph_rd_en, left_emph_wr_en : std_logic;
-    signal right_emph_din, right_emph : std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal right_emph_empty, right_emph_full : std_logic;
-    signal right_emph_rd_en, right_emph_wr_en : std_logic;
-    signal left_deemph_din, left_deemph : std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal left_deemph_empty, left_deemph_full : std_logic;
-    signal left_deemph_rd_en, left_deemph_wr_en : std_logic;
-    signal right_deemph_din, right_deemph : std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal right_deemph_empty, right_deemph_full : std_logic;
-    signal right_deemph_rd_en, right_deemph_wr_en : std_logic;
-    signal left_gain_din : std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal left_gain_full : std_logic;
-    signal left_gain_wr_en : std_logic;
-    signal right_gain_din : std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal right_gain_full : std_logic;
-    signal right_gain_wr_en : std_logic;
+    signal input_din, iq : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal input_empty : std_logic := '0';
+    signal input_rd_en : std_logic := '0';
+    signal i_din, i : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal i_empty, i_full : std_logic := '0';
+    signal i_rd_en, i_wr_en : std_logic := '0';
+    signal q_din, q : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal q_empty, q_full : std_logic := '0';
+    signal q_rd_en, q_wr_en : std_logic := '0';
+    signal i_filtered_din, i_filtered : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal i_filtered_empty, i_filtered_full : std_logic := '0';
+    signal i_filtered_rd_en, i_filtered_wr_en : std_logic := '0';
+    signal q_filtered_din, q_filtered : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal q_filtered_empty, q_filtered_full : std_logic := '0';
+    signal q_filtered_rd_en, q_filtered_wr_en : std_logic := '0';
+    signal demodulated : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal demod_full : std_logic := '0';
+    signal demod_wr_en : std_logic := '0';
+    signal pre_pilot : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal pre_pilot_empty, pre_pilot_full : std_logic := '0';
+    signal pre_pilot_rd_en : std_logic := '0';
+    signal pilot_filtered_din, pilot_filtered : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal pilot_filtered_empty, pilot_filtered_full : std_logic := '0';
+    signal pilot_filtered_rd_en, pilot_filtered_wr_en : std_logic := '0';
+    signal pilot_squared_din, pilot_squared : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal pilot_squared_empty, pilot_squared_full : std_logic := '0';
+    signal pilot_squared_rd_en, pilot_squared_wr_en : std_logic := '0';
+    signal pilot_din, pilot : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal pilot_empty, pilot_full : std_logic := '0';
+    signal pilot_rd_en, pilot_wr_en : std_logic := '0';
+    signal left_channel : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal left_channel_empty, left_channel_full : std_logic := '0';
+    signal left_channel_rd_en : std_logic := '0';
+    signal left_band_din, left_band : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal left_band_empty, left_band_full : std_logic := '0';
+    signal left_band_rd_en, left_band_wr_en : std_logic := '0';
+    signal left_multiplied_din, left_multiplied : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal left_multiplied_empty, left_multiplied_full : std_logic := '0';
+    signal left_multiplied_rd_en, left_multiplied_wr_en : std_logic := '0';
+    signal left_low_din, left_low : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal left_low_empty, left_low_full : std_logic := '0';
+    signal left_low_rd_en, left_low_wr_en : std_logic := '0';
+    signal right_channel : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal right_channel_empty, right_channel_full : std_logic := '0';
+    signal right_channel_rd_en : std_logic := '0';
+    signal right_low_din, right_low : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal right_low_empty, right_low_full : std_logic := '0';
+    signal right_low_rd_en, right_low_wr_en : std_logic := '0';
+    signal left_emph_din, left_emph : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal left_emph_empty, left_emph_full : std_logic := '0';
+    signal left_emph_rd_en, left_emph_wr_en : std_logic := '0';
+    signal right_emph_din, right_emph : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal right_emph_empty, right_emph_full : std_logic := '0';
+    signal right_emph_rd_en, right_emph_wr_en : std_logic := '0';
+    signal left_deemph_din, left_deemph : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal left_deemph_empty, left_deemph_full : std_logic := '0';
+    signal left_deemph_rd_en, left_deemph_wr_en : std_logic := '0';
+    signal right_deemph_din, right_deemph : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal right_deemph_empty, right_deemph_full : std_logic := '0';
+    signal right_deemph_rd_en, right_deemph_wr_en : std_logic := '0';
+    signal left_gain_din : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal left_gain_full : std_logic := '0';
+    signal left_gain_wr_en : std_logic := '0';
+    signal right_gain_din : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal right_gain_full : std_logic := '0';
+    signal right_gain_wr_en : std_logic := '0';
 begin
+
+    input_buffer : fifo
+    generic map
+    (
+        DWIDTH => WORD_SIZE,
+        BUFFER_SIZE => INPUT_BUFFER_SIZE
+    )
+    port map
+    (
+        rd_clk => clock,
+        wr_clk => clock,
+        reset => reset,
+        rd_en => input_rd_en,
+        wr_en => input_wr_en,
+        din => din,
+        dout => iq,
+        full => input_full,
+        empty => input_empty
+    );
 
     input_read : read_iq
     port map
     (
         clock => clock,
         reset => reset,
-        iq_din => signal_din,
-        iq_empty => signal_empty,
+        iq_din => iq,
+        iq_empty => input_empty,
         i_full => i_full,
         q_full => q_full,
-        iq_rd_en => signal_rd_en,
+        iq_rd_en => input_rd_en,
         i_wr_en => i_wr_en,
         q_wr_en => q_wr_en,
         i_dout => i_din,
@@ -184,8 +207,8 @@ begin
         imag_out_full => q_filtered_full,
         real_in_rd_en => i_rd_en,
         imag_in_rd_en => q_rd_en,
-        real_dout => i_filtered,
-        imag_dout => q_filtered,
+        real_dout => i_filtered_din,
+        imag_dout => q_filtered_din,
         real_out_wr_en => i_filtered_wr_en,
         imag_out_wr_en => q_filtered_wr_en
     );
@@ -348,7 +371,7 @@ begin
         coeffs => HP_COEFFS,
         in_empty => pilot_squared_empty,
         out_full => pilot_full,
-        in_rd_en => pilot_squared_empty,
+        in_rd_en => pilot_squared_rd_en,
         dout => pilot_din,
         out_wr_en => pilot_wr_en
     );
@@ -574,7 +597,7 @@ begin
         left_dout => left_emph_din,
         right_dout => right_emph_din,
         left_out_wr_en => left_emph_wr_en,
-        right_out_wr_en => left_emph_wr_en
+        right_out_wr_en => right_emph_wr_en
     );
 
     left_emph_buffer : fifo

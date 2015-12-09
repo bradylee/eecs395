@@ -31,7 +31,7 @@ architecture behavioral of iir is
     signal y_buffer, y_buffer_c : quant_array (0 to TAPS - 1);
 begin
 
-    filter_process : process (state, x_buffer, y_buffer, din, in_empty, out_full)
+    filter_process : process (state, x_buffer, y_buffer, din, in_empty, out_full, x_coeffs, y_coeffs)
         variable sum_x, sum_y : signed (WORD_SIZE - 1 downto 0) := (others => '0');
     begin
         next_state <= state;
@@ -42,6 +42,9 @@ begin
         out_wr_en <= '0';
         dout <= (others => '0');
 
+        sum_x := (others => '0');
+        sum_y := (others => '0');
+
         case (state) is
             when init =>
                 if (in_empty = '0') then
@@ -51,7 +54,7 @@ begin
             when exec =>
                 if (in_empty = '0' and out_full = '0') then
                     in_rd_en <= '1';
-                    for i in TAPS - 1 to 1 loop
+                    for i in TAPS - 1 downto 1 loop
                         -- shift x buffer
                         x_buffer_c(i) <= x_buffer(i - 1);
                     end loop;
@@ -62,7 +65,7 @@ begin
                         sum_y := sum_y + DEQUANTIZE(signed(y_coeffs(i)) * signed(y_buffer(i)));
                     end loop;
 
-                    for i in TAPS - 1 to 1 loop
+                    for i in TAPS - 1 downto 1 loop
                         -- shift y buffer
                         y_buffer_c(i) <= y_buffer(i - 1);
                     end loop;

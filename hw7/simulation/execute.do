@@ -15,6 +15,7 @@ vcom -work work ../components/fir_complex.vhd
 vcom -work work ../components/iir.vhd
 vcom -work work ../components/demodulate.vhd
 vcom -work work ../components/radio.vhd
+vcom -work work radio_tb.vhd
 
 #vsim +notimingchecks -L work work.udp_write_top_tb -wlf vsim.wlf
 

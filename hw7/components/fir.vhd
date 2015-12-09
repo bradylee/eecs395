@@ -29,7 +29,7 @@ architecture behavioral of fir is
     signal data_buffer, data_buffer_c : quant_array (0 to TAPS - 1);
 begin
 
-    filter_process : process (state, data_buffer, din, in_empty)
+    filter_process : process (state, data_buffer, din, in_empty, out_full, coeffs)
         variable sum : signed (WORD_SIZE - 1 downto 0) := (others => '0');
     begin
         next_state <= state;
@@ -38,6 +38,8 @@ begin
         in_rd_en <= '0';
         out_wr_en <= '0';
         dout <= (others => '0');
+
+        sum := (others => '0');
 
         case (state) is
             when init =>
@@ -48,7 +50,7 @@ begin
             when exec =>
                 if (in_empty = '0' and out_full = '0') then
                     in_rd_en <= '1';
-                    for i in TAPS - 1 to 1 loop
+                    for i in TAPS - 1 downto 1 loop
                         -- shift buffer
                         data_buffer_c(i) <= data_buffer(i - 1);
                     end loop;
