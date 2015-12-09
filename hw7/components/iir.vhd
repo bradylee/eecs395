@@ -2,6 +2,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.constants.all;
+use work.functions.all;
+use work.dependent.all;
 
 entity iir is
     generic
@@ -15,11 +17,11 @@ entity iir is
         din : in std_logic_vector (WORD_SIZE - 1 downto 0);
         x_coeffs : in quant_array (0 to TAPS - 1);
         y_coeffs : in quant_array (0 to TAPS - 1);
-        empty : in std_logic;
-        full : in std_logic;
-        rd_en : out std_logic;
+        in_empty : in std_logic;
+        out_full : in std_logic;
+        in_rd_en : out std_logic;
         dout : out std_logic_vector (WORD_SIZE - 1 downto 0);
-        wr_en : out std_logic
+        out_wr_en : out std_logic
     );
 end entity;
 
@@ -29,15 +31,15 @@ architecture behavioral of iir is
     signal y_buffer, y_buffer_c : quant_array (0 to TAPS - 1);
 begin
 
-    filter_process : process (state, x_buffer, y_buffer, din, in_empty)
-        variable sum_x, sum_y : unsigned (WORD_SIZE - 1 downto 0) := (others => '0');
+    filter_process : process (state, x_buffer, y_buffer, din, in_empty, out_full)
+        variable sum_x, sum_y : signed (WORD_SIZE - 1 downto 0) := (others => '0');
     begin
         next_state <= state;
         x_buffer_c <= x_buffer;
         y_buffer_c <= y_buffer;
 
-        rd_en <= '0';
-        wr_en <= '0';
+        in_rd_en <= '0';
+        out_wr_en <= '0';
         dout <= (others => '0');
 
         case (state) is
@@ -48,27 +50,26 @@ begin
 
             when exec =>
                 if (in_empty = '0' and out_full = '0') then
-                    rd_en <= '1';
-
-                    -- shift x buffer
+                    in_rd_en <= '1';
                     for i in TAPS - 1 to 1 loop
+                        -- shift x buffer
                         x_buffer_c(i) <= x_buffer(i - 1);
                     end loop;
                     x_buffer_c(0) <= din; 
 
                     for i in 0 to TAPS - 1 loop
-                        sum_x := sum_x + DEQUANTIZE(unsigned(x_coeffs(i)) * unsigned(x_buffer(i)));
-                        sum_y := sum_y + DEQUANTIZE(unsigned(y_coeffs(i)) * unsigned(y_buffer(i)));
+                        sum_x := sum_x + DEQUANTIZE(signed(x_coeffs(i)) * signed(x_buffer(i)));
+                        sum_y := sum_y + DEQUANTIZE(signed(y_coeffs(i)) * signed(y_buffer(i)));
                     end loop;
 
-                    -- shift y buffer
                     for i in TAPS - 1 to 1 loop
+                        -- shift y buffer
                         y_buffer_c(i) <= y_buffer(i - 1);
                     end loop;
-                    y_buffer_c(0) <= std_logic_vector(unsigned(sum_x) + unsigned(sum_y)); 
+                    y_buffer_c(0) <= std_logic_vector(signed(sum_x) + signed(sum_y)); 
 
                     dout <= y_buffer(TAPS - 1);
-                    wr_en <= '1';
+                    out_wr_en <= '1';
                 end if;
 
             when others =>

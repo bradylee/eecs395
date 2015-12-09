@@ -2,8 +2,14 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.constants.all;
+use work.functions.all;
+use work.dependent.all;
 
 entity demodulate is
+    generic
+    (
+        GAIN : natural := 20
+    );
     port 
     (
         clock : in std_logic;
@@ -21,14 +27,21 @@ entity demodulate is
 end entity;
 
 architecture behavioral of demodulate is
-    signal state, next_state : standard_state_type := init;
+    type demod_state_type : (init, read, divide, write);
+    signal state, next_state : demod_state_type := init;
     signal real_prev, real_prev_c : std_logic_vector (WORD_SIZE - 1 downto 0);
     signal imag_prev, imag_prev_c : std_logic_vector (WORD_SIZE - 1 downto 0);
+    signal dividend, dividend_c : std_logic_vector (WORD_SIZE - 1 downto 0);
+    signal divisor, divisor_c : std_logic_vector (WORD_SIZE - 1 downto 0);
+    signal quotient, quotient_c : std_logic_vector (WORD_SIZE - 1 downto 0);
+    signal angle, angle_c : signed (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal a, a_c, : signed (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal b, b_c : signed (WORD_SIZE - 1 downto 0) := (others => '0');
 begin
 
-    filter_process : process (state, real_din, imag_din, real_empty, imag_empty)
+    demod_process : process (state, real_din, imag_din, real_empty, imag_empty)
         variable r, i : signed (WORD_SIZE - 1 downto 0) := (others => '0');
-        variable angle : signed (WORD_SIZE - 1 downto 0) := (others => '0');
+        variable dividend_v, divisor_v : std_logic_vector (WORD_SIZE - 1 downto 0);
     begin
         next_state <= state;
 
@@ -40,15 +53,19 @@ begin
         case (state) is
             when init =>
                 if (real_empty = '0' and imag_empty = '0') then
-                    real_prev <= (others => '0');
-                    imag_prev <= (others => '0');
-                    r <= (others => '0');
-                    i <= (others => '0');
-                    next_state <= exec;
+                    real_prev_c <= (others => '0');
+                    imag_prev_c <= (others => '0');
+                    dividend_c <= (others => '0');
+                    divisor_c <= (others => '0');
+                    quotient_c <= (others => '0');
+                    a_c <= (others => '0');
+                    b_c <= (others => '0');
+                    angle_c <= (others => '0');
+                    next_state <= read;
                 end if;
 
-            when exec =>
-                if (real_empty = '0' and imag_empty = '0') then
+            when read =>
+                if (real_empty = '0') then
                     real_rd_en <= '1';
                     imag_rd_en <= '1';
 
@@ -56,13 +73,54 @@ begin
                     i := signed(DEQUANTIZE(unsigned(imag_din) * unsigned(real_prev)) - DEQUANTIZE(unsigned(real_din) * unsigned(imag_prev)));
                     i := abs(i) + 1;
 
+                    real_prev_c <= real_din;
+                    imag_prev_c <= imag_din;
+
                     if (r >= 0) then
-                        angle = QUAD1 - DEQUANTIZE(QUAD1 * DIV(QUANTIZE(r - i), r + i))
+                        --angle = QUAD1 - DEQUANTIZE(QUAD1 * DIV(QUANTIZE(r - i), r + i))
+                        angle_c <= QUAD1;
+                        dividend_v := QUANTIZE(r - i);
+                        divisor_v := r + i;
                     else
-                        angle = QUAD3 - DEQUANTIZE(QUAD3 * DIV(QUANTIZE(r + i), i - r))
+                        --angle = QUAD3 - DEQUANTIZE(QUAD3 * DIV(QUANTIZE(r + i), i - r))
+                        angle_c <= QUAD3;
+                        dividend_v <= QUANTIZE(r + i);
+                        divisor_v := i - r;
                     end if;
 
-                    demod_dout <= DEQUANTIZE(gain * abs(angle));
+                    dividend_c <= dividend_v;
+                    divisor_c <= divisor_v;
+                    a_c <= abs(dividend_v);
+                    b_c <= abs(divisor_v);
+
+                    next_state <= divide;
+                end if;
+
+            when divide =>
+                if (b = 1) then
+                    q_c <= a;
+                    a_c <= (others => '0'); 
+                end if;
+
+                if (a >= b) then
+                    p := GET_MSB(a) - GET_MSB(b);
+                    if ((b sll p) > a) then
+                        p := p - 1;
+                    end if;
+                    q_c <= q + (1 sll p);
+                    a_c <= a - (b sll p);
+                else
+                    quotient_c <= q;
+                    if (a(WORD_SIZE - 1) xor b(WORD_SIZE - 1) = 1) then
+                        quotient_c <= -q;
+                    end if;
+                    next_state <= write;
+                end if;
+
+            when write =>
+                if (demod_full = '0') then
+                    demod_dout <= std_logic_vector(DEQUANTIZE(GAIN * abs(angle - DEQUANTIZE(angle * quotient))));
+                    next_state <= read;
                 end if;
 
             when others =>

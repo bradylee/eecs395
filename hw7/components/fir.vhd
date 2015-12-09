@@ -2,6 +2,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.constants.all;
+use work.functions.all;
+use work.dependent.all;
 
 entity fir is
     generic
@@ -28,7 +30,7 @@ architecture behavioral of fir is
 begin
 
     filter_process : process (state, data_buffer, din, in_empty)
-        variable sum : unsigned (WORD_SIZE - 1 downto 0) := (others => '0');
+        variable sum : signed (WORD_SIZE - 1 downto 0) := (others => '0');
     begin
         next_state <= state;
         data_buffer_c <= data_buffer;
@@ -46,13 +48,13 @@ begin
             when exec =>
                 if (in_empty = '0' and out_full = '0') then
                     in_rd_en <= '1';
-                    -- shift buffer
                     for i in TAPS - 1 to 1 loop
+                        -- shift buffer
                         data_buffer_c(i) <= data_buffer(i - 1);
                     end loop;
                     data_buffer_c(0) <= din;
                     for i in 0 to TAPS - 1 loop
-                        sum := sum + DEQUANTIZE(unsigned(coeffs(TAPS - 1 - i)) * unsigned(data_buffer(i)));
+                        sum := sum + signed(DEQUANTIZE(signed(coeffs(TAPS - 1 - i)) * signed(data_buffer(i))));
                     end loop;
                     dout <= std_logic_vector(sum);
                     out_wr_en <= '1';

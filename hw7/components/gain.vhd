@@ -2,6 +2,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.constants.all;
+use work.functions.all;
+use work.dependent.all;
 
 entity gain is
     generic
@@ -15,7 +17,7 @@ entity gain is
         volume : in integer;
         din : in std_logic_vector (WORD_SIZE - 1 downto 0);
         in_empty : in std_logic;
-        full : in std_logic;
+        out_full : in std_logic;
         in_rd_en : out std_logic;
         dout : out std_logic_vector (WORD_SIZE - 1 downto 0);
         out_wr_en : out std_logic
@@ -43,7 +45,7 @@ begin
             when exec =>
                 if (in_empty = '0' and out_full = '0') then
                     in_rd_en <= '1';
-                    dout <= std_logic_vector(DEQUANTIZE(unsigned(din) * volume) sll (MYSTERY - FRAC_BITS));
+                    dout <= std_logic_vector(DEQUANTIZE(signed(din) * volume) sll (MYSTERY - FRAC_BITS));
                     out_wr_en <= '1';
                 end if;
 

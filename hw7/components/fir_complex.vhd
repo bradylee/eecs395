@@ -2,6 +2,8 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use work.constants.all;
+use work.functions.all;
+use work.dependent.all;
 
 entity fir_complex is
     generic
@@ -34,7 +36,7 @@ architecture behavioral of fir_complex is
 begin
 
     filter_process : process (state, real_buffer, imag_buffer, real_din, imag_din, real_in_empty, imag_in_empty, real_out_full, imag_out_full)
-        variable sum_real, sum_imag : unsigned (WORD_SIZE - 1 downto 0) := (others => '0');
+        variable sum_real, sum_imag : signed (WORD_SIZE - 1 downto 0) := (others => '0');
     begin
         next_state <= state;
         real_buffer_c <= real_buffer;
@@ -57,16 +59,16 @@ begin
                 if (real_in_empty = '0' and imag_in_empty = '0' and real_out_full = '0' and imag_out_full = '0') then
                     real_in_rd_en <= '1';
                     imag_in_rd_en <= '1';
-                    -- shift buffers
                     for i in TAPS - 1 to 1 loop
+                        -- shift buffers
                         real_buffer_c(i) <= real_buffer(i - 1);
                         imag_buffer_c(i) <= imag_buffer(i - 1);
                     end loop;
                     real_buffer_c(0) <= real_din;
                     imag_buffer_c(0) <= imag_din;
                     for i in 0 to TAPS - 1 loop
-                        sum_real := sum_real + DEQUANTIZE(unsigned(CHANNEL_COEFFS_REAL(i)) * unsigned(real_buffer(i)) - unsigned(CHANNEL_COEFFS_IMAG(i)) * unsigned(imag_buffer(i)));
-                        sum_imag := sum_imag + DEQUANTIZE(unsigned(CHANNEL_COEFFS_REAL(i)) * unsigned(imag_buffer(i)) - unsigned(CHANNEL_COEFFS_IMAG(i)) * unsigned(real_buffer(i)));
+                        sum_real := sum_real + signed(DEQUANTIZE(signed(CHANNEL_COEFFS_REAL(i)) * signed(real_buffer(i)) - signed(CHANNEL_COEFFS_IMAG(i)) * signed(imag_buffer(i))));
+                        sum_imag := sum_imag + signed(DEQUANTIZE(signed(CHANNEL_COEFFS_REAL(i)) * signed(imag_buffer(i)) - signed(CHANNEL_COEFFS_IMAG(i)) * signed(real_buffer(i))));
                     end loop;
                     real_dout <= std_logic_vector(sum_real);
                     imag_dout <= std_logic_vector(sum_imag);

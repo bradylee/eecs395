@@ -10,10 +10,17 @@ package constants is
     type quant_array is array (natural range <>) of std_logic_vector (WORD_SIZE - 1 downto 0); 
     type standard_state_type is (init, exec, idle, term);
 
+    constant PI : real := 3.1415926535897932384626433832795;
+    constant ADC_RATE : natural := 64000000;
+    constant USRP_DECIM : natural := 250;
+    constant AUDIO_DECIM : natural := 8;
+    constant MAX_TAPS : natural := 32;
+    constant SAMPLES : natural := 65536 * 4;
+    constant MAX_DEV : real := 55000.0;
+    constant W_PP : real := 0.21140067;
+
     -- Deemphasis IIR Filter Coefficients: 
     constant IIR_COEFF_TAPS : natural := 2;
-    --constant IIR_Y_COEFFS quant_array (0 to _COEFF_TAPS) := {QUANTIZE_F(0.0f)", QUANTIZE_F((W_PP - 1.0f) / (W_PP + 1.0f))};
-    --constant IIR_X_COEFFS quant_array (0 to _COEFF_TAPS) := {QUANTIZE_F(W_PP / (1.0f + W_PP))", QUANTIZE_F(W_PP / (1.0f + W_PP))};
 
     -- Channel low-pass complex filter coefficients @ 0kHz to 80kHz
     constant CHANNEL_COEFF_TAPS : natural := 20;

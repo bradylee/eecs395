@@ -10,7 +10,6 @@
 -- Legal Disclaimer : The use of this file is governed by the Binachip, Inc. Software License Agreement.
 --
 
-
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;

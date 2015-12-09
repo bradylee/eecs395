@@ -1,12 +1,19 @@
 vlib work
 vcom -work work ../components/constants.vhd
+vcom -work work ../components/components.vhd
+vcom -work work ../components/functions.vhd
+vcom -work work ../components/dependent.vhd
 vcom -work work ../components/fifo.vhd
+vcom -work work ../components/square.vhd
+vcom -work work ../components/multiply.vhd
+vcom -work work ../components/addsub.vhd
 vcom -work work ../components/read_iq.vhd
-vcom -work work ../components/fir.vhd
-vcom -work work ../components/fir_complex.vhd
-vcom -work work ../components/arithmetic.vhd
-vcom -work work ../components/iir.vhd
 vcom -work work ../components/gain.vhd
+vcom -work work ../components/fir.vhd
+vcom -work work ../components/fir_decimated.vhd
+vcom -work work ../components/fir_complex.vhd
+vcom -work work ../components/iir.vhd
+vcom -work work ../components/radio.vhd
 
 #vsim +notimingchecks -L work work.udp_write_top_tb -wlf vsim.wlf
 
