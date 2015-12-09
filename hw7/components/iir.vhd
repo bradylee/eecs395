@@ -33,6 +33,7 @@ begin
 
     filter_process : process (state, x_buffer, y_buffer, din, in_empty, out_full, x_coeffs, y_coeffs)
         variable sum_x, sum_y : signed (WORD_SIZE - 1 downto 0) := (others => '0');
+        variable x_buffer_v, y_buffer_v : quant_array (0 to TAPS - 1);
     begin
         next_state <= state;
         x_buffer_c <= x_buffer;
@@ -49,9 +50,9 @@ begin
             when init =>
                 if (in_empty = '0') then
                     next_state <= exec;
-                    in_rd_en <= '1';
-                    x_buffer_c(0) <= din; 
-                    y_buffer_c(0) <= std_logic_vector(DEQUANTIZE(signed(x_coeffs(0)) * signed(din)));
+                   -- in_rd_en <= '1';
+                   -- x_buffer_c(0) <= din; 
+                   -- y_buffer_c(0) <= std_logic_vector(DEQUANTIZE(signed(x_coeffs(0)) * signed(din)));
                 end if;
 
             when exec =>
@@ -59,20 +60,22 @@ begin
                     in_rd_en <= '1';
                     for i in TAPS - 1 downto 1 loop
                         -- shift x buffer
-                        x_buffer_c(i) <= x_buffer(i - 1);
+                        x_buffer_v(i) <= x_buffer(i - 1);
                     end loop;
-                    x_buffer_c(0) <= din; 
+                    x_buffer_v(0) <= din; 
+                    x_buffer_c <= x_buffer_v;
 
                     for i in 0 to TAPS - 1 loop
-                        sum_x := sum_x + DEQUANTIZE(signed(x_coeffs(i)) * signed(x_buffer(i)));
-                        sum_y := sum_y + DEQUANTIZE(signed(y_coeffs(i)) * signed(y_buffer(i)));
+                        sum_x := sum_x + DEQUANTIZE(signed(x_coeffs_v(i)) * signed(x_buffer_v(i)));
+                        sum_y := sum_y + DEQUANTIZE(signed(y_coeffs_v(i)) * signed(y_buffer_v(i)));
                     end loop;
 
                     for i in TAPS - 1 downto 1 loop
                         -- shift y buffer
-                        y_buffer_c(i) <= y_buffer(i - 1);
+                        y_buffer_v(i) <= y_buffer(i - 1);
                     end loop;
-                    y_buffer_c(0) <= std_logic_vector(signed(sum_x) + signed(sum_y)); 
+                    y_buffer_v(0) <= std_logic_vector(signed(sum_x) + signed(sum_y)); 
+                    y_buffer_c <= y_buffer_v;
 
                     dout <= y_buffer(TAPS - 1);
                     out_wr_en <= '1';

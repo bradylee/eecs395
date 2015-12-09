@@ -31,6 +31,7 @@ begin
 
     filter_process : process (state, data_buffer, din, in_empty, out_full, coeffs)
         variable sum : signed (WORD_SIZE - 1 downto 0) := (others => '0');
+        variable data_buffer_v : quant_array (0 to TAPS - 1);
     begin
         next_state <= state;
         data_buffer_c <= data_buffer;
@@ -45,8 +46,8 @@ begin
             when init =>
                 if (in_empty = '0') then
                     next_state <= exec;
-                    in_rd_en <= '1';
-                    data_buffer_c(0) <= din;
+                   -- in_rd_en <= '1';
+                   -- data_buffer_c(0) <= din;
                 end if;
 
             when exec =>
@@ -54,11 +55,12 @@ begin
                     in_rd_en <= '1';
                     for i in TAPS - 1 downto 1 loop
                         -- shift buffer
-                        data_buffer_c(i) <= data_buffer(i - 1);
+                        data_buffer_v(i) <= data_buffer(i - 1);
                     end loop;
-                    data_buffer_c(0) <= din;
+                    data_buffer_v(0) <= din;
+                    data_buffer_c <= data_buffer_v;
                     for i in 0 to TAPS - 1 loop
-                        sum := sum + signed(DEQUANTIZE(signed(coeffs(TAPS - 1 - i)) * signed(data_buffer(i))));
+                        sum := sum + signed(DEQUANTIZE(signed(coeffs(TAPS - 1 - i)) * signed(data_buffer_v(i))));
                     end loop;
                     dout <= std_logic_vector(sum);
                     out_wr_en <= '1';

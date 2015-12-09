@@ -20,18 +20,24 @@ vcom -work work radio_tb.vhd
 vsim +notimingchecks -L work work.radio_tb -wlf vsim.wlf
 
 add wave -noupdate -group TEST_BENCH -radix hexadecimal /radio_tb/*
-add wave -noupdate -group TOP_LEVEL -radix hexadecimal /radio_tb/top_inst/*
+add wave -noupdate -expand -group TOP_LEVEL -radix hexadecimal /radio_tb/top_inst/*
+add wave -noupdate -group INPUT_BUFFER -radix hexadecimal /radio_tb/top_inst/input_buffer/*
 add wave -noupdate -group INPUT_READ -radix hexadecimal /radio_tb/top_inst/input_read/*
+add wave -noupdate -group I_BUFFER -radix hexadecimal /radio_tb/top_inst/i_buffer/*
+add wave -noupdate -group Q_BUFFER -radix hexadecimal /radio_tb/top_inst/q_buffer/*
 add wave -noupdate -group CHANNEL_FILTER -radix hexadecimal /radio_tb/top_inst/channel_filter/*
-add wave -noupdate -expand -group DEMODULATOR -radix hexadecimal /radio_tb/top_inst/demodulator/*
+add wave -noupdate -group I_FILTERED_BUFFER -radix hexadecimal /radio_tb/top_inst/i_filtered_buffer/*
+add wave -noupdate -group Q_FILTERED_BUFFER -radix hexadecimal /radio_tb/top_inst/q_filtered_buffer/*
+add wave -noupdate -group DEMODULATOR -radix hexadecimal /radio_tb/top_inst/demodulator/*
 add wave -noupdate -group DEMODULATOR -radix hexadecimal /radio_tb/top_inst/demodulator/demod_process/*
+add wave -noupdate -group RIGHT_LOW_FILTER -radix hexadecimal /radio_tb/top_inst/right_low_filter/*
+add wave -noupdate -group LEFT_BAND_FILTER -radix hexadecimal /radio_tb/top_inst/left_band_filter/*
 add wave -noupdate -group PILOT_FILTER -radix hexadecimal /radio_tb/top_inst/pilot_filter/*
 add wave -noupdate -group SQUARER -radix hexadecimal /radio_tb/top_inst/squarer/*
 add wave -noupdate -group PILOT_SQUARED_FILTER -radix hexadecimal /radio_tb/top_inst/pilot_squared_filter/*
-add wave -noupdate -group LEFT_BAND_FILTER -radix hexadecimal /radio_tb/top_inst/left_band_filter/*
+
 add wave -noupdate -group MULTIPLIER -radix hexadecimal /radio_tb/top_inst/multiplier/*
 add wave -noupdate -group LEFT_LOW_FILTER -radix hexadecimal /radio_tb/top_inst/left_low_filter/*
-add wave -noupdate -group RIGHT_LOW_FILTER -radix hexadecimal /radio_tb/top_inst/right_low_filter/*
 add wave -noupdate -group ADDER_SUBTRACTOR -radix hexadecimal /radio_tb/top_inst/adder_subtractor/*
 add wave -noupdate -group DEEMPHASIZE_LEFT -radix hexadecimal /radio_tb/top_inst/deemphasize_left/*
 add wave -noupdate -group DEEMPHASIZE_RIGHT -radix hexadecimal /radio_tb/top_inst/deemphasize_right/*
@@ -39,10 +45,10 @@ add wave -noupdate -group GAIN_LEFT -radix hexadecimal /radio_tb/top_inst/gain_l
 add wave -noupdate -group GAIN_RIGHT -radix hexadecimal /radio_tb/top_inst/gain_right/*
 
 #run -all
-run 100 ns
+run 500 ns
 
-configure wave -namecolwidth 350
+configure wave -namecolwidth 325
 configure wave -valuecolwidth 100
 configure wave -timelineunits ns
-WaveRestoreZoom {0 ns} {75 ns}
+WaveRestoreZoom {0 ns} {80 ns}
 

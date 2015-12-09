@@ -9,27 +9,27 @@ use work.components.all;
 entity radio is
     generic
     (
-        INPUT_BUFFER_SIZE : natural := 64;
-        I_BUFFER_SIZE : natural := 64;
-        Q_BUFFER_SIZE : natural := 64;
-        I_FILTERED_BUFFER_SIZE : natural := 64;
-        Q_FILTERED_BUFFER_SIZE : natural := 64;
-        PRE_PILOT_BUFFER_SIZE : natural := 64;
-        PILOT_FILTERED_BUFFER_SIZE : natural := 64;
-        PILOT_SQUARED_BUFFER_SIZE : natural := 64;
-        PILOT_BUFFER_SIZE : natural := 64;
-        LEFT_CHANNEL_BUFFER_SIZE : natural := 64;
-        LEFT_BAND_BUFFER_SIZE : natural := 64;
-        LEFT_MULTIPLIED_BUFFER_SIZE : natural := 64;
-        LEFT_LOW_BUFFER_SIZE : natural := 64;
-        RIGHT_CHANNEL_BUFFER_SIZE : natural := 64;
-        RIGHT_LOW_BUFFER_SIZE : natural := 64;
-        LEFT_EMPH_BUFFER_SIZE : natural := 64;
-        RIGHT_EMPH_BUFFER_SIZE : natural := 64;
-        LEFT_DEEMPH_BUFFER_SIZE : natural := 64;
-        RIGHT_DEEMPH_BUFFER_SIZE : natural := 64;
-        LEFT_GAIN_BUFFER_SIZE : natural := 64;
-        RIGHT_GAIN_BUFFER_SIZE : natural := 64
+        INPUT_BUFFER_SIZE : natural := 512;
+        I_BUFFER_SIZE : natural := 512;
+        Q_BUFFER_SIZE : natural := 512;
+        I_FILTERED_BUFFER_SIZE : natural := 512;
+        Q_FILTERED_BUFFER_SIZE : natural := 512;
+        PRE_PILOT_BUFFER_SIZE : natural := 512;
+        PILOT_FILTERED_BUFFER_SIZE : natural := 512;
+        PILOT_SQUARED_BUFFER_SIZE : natural := 512;
+        PILOT_BUFFER_SIZE : natural := 512;
+        LEFT_CHANNEL_BUFFER_SIZE : natural := 512;
+        LEFT_BAND_BUFFER_SIZE : natural := 512;
+        LEFT_MULTIPLIED_BUFFER_SIZE : natural := 512;
+        LEFT_LOW_BUFFER_SIZE : natural := 512;
+        RIGHT_CHANNEL_BUFFER_SIZE : natural := 512;
+        RIGHT_LOW_BUFFER_SIZE : natural := 512;
+        LEFT_EMPH_BUFFER_SIZE : natural := 512;
+        RIGHT_EMPH_BUFFER_SIZE : natural := 512;
+        LEFT_DEEMPH_BUFFER_SIZE : natural := 512;
+        RIGHT_DEEMPH_BUFFER_SIZE : natural := 512;
+        LEFT_GAIN_BUFFER_SIZE : natural := 512;
+        RIGHT_GAIN_BUFFER_SIZE : natural := 512
     );
     port 
     (
@@ -49,7 +49,7 @@ entity radio is
 end entity;
 
 architecture structural of radio is
-    signal input_din, iq : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal iq : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
     signal input_rd_en : std_logic := '0';
     signal input_empty : std_logic := '0';
     signal i_din, i : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
@@ -67,6 +67,18 @@ architecture structural of radio is
     signal demodulated : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
     signal demod_wr_en : std_logic := '0';
     signal demod_full : std_logic := '0';
+    signal right_channel : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal right_channel_rd_en : std_logic := '0';
+    signal right_channel_empty, right_channel_full : std_logic := '0';
+    signal right_low_din, right_low : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal right_low_rd_en, right_low_wr_en : std_logic := '0';
+    signal right_low_empty, right_low_full : std_logic := '0';
+    signal left_channel : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal left_channel_rd_en : std_logic := '0';
+    signal left_channel_empty, left_channel_full : std_logic := '0';
+    signal left_band_din, left_band : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal left_band_rd_en, left_band_wr_en : std_logic := '0';
+    signal left_band_empty, left_band_full : std_logic := '0';
     signal pre_pilot : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
     signal pre_pilot_rd_en : std_logic := '0';
     signal pre_pilot_empty, pre_pilot_full : std_logic := '0';
@@ -79,24 +91,12 @@ architecture structural of radio is
     signal pilot_din, pilot : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
     signal pilot_rd_en, pilot_wr_en : std_logic := '0';
     signal pilot_empty, pilot_full : std_logic := '0';
-    signal left_channel : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
-    signal left_channel_rd_en : std_logic := '0';
-    signal left_channel_empty, left_channel_full : std_logic := '0';
-    signal left_band_din, left_band : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
-    signal left_band_rd_en, left_band_wr_en : std_logic := '0';
-    signal left_band_empty, left_band_full : std_logic := '0';
     signal left_multiplied_din, left_multiplied : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
     signal left_multiplied_rd_en, left_multiplied_wr_en : std_logic := '0';
     signal left_multiplied_empty, left_multiplied_full : std_logic := '0';
     signal left_low_din, left_low : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
     signal left_low_rd_en, left_low_wr_en : std_logic := '0';
     signal left_low_empty, left_low_full : std_logic := '0';
-    signal right_channel : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
-    signal right_channel_rd_en : std_logic := '0';
-    signal right_channel_empty, right_channel_full : std_logic := '0';
-    signal right_low_din, right_low : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
-    signal right_low_rd_en, right_low_wr_en : std_logic := '0';
-    signal right_low_empty, right_low_full : std_logic := '0';
     signal left_emph_din, left_emph : std_logic_vector (WORD_SIZE - 1 downto 0) := (others => '0');
     signal left_emph_rd_en, left_emph_wr_en : std_logic := '0';
     signal left_emph_empty, left_emph_full : std_logic := '0';
@@ -270,6 +270,119 @@ begin
     -- demodulated is input to three different fifos
     demod_full <= pre_pilot_full or left_channel_full or right_channel_full;
 
+    right_channel_buffer : fifo
+    generic map
+    (
+        DWIDTH => WORD_SIZE,
+        BUFFER_SIZE => RIGHT_CHANNEL_BUFFER_SIZE
+    )
+    port map
+    (
+        rd_clk => clock,
+        wr_clk => clock,
+        reset => reset,
+        rd_en => right_channel_rd_en,
+        wr_en => demod_wr_en,
+        din => demodulated,
+        dout => right_channel,
+        full => right_channel_full,
+        empty => right_channel_empty
+    );
+
+    right_low_filter : fir_decimated
+    generic map
+    (
+        TAPS => AUDIO_LPR_COEFF_TAPS,
+        DECIMATION => AUDIO_DECIM
+    )
+    port map
+    (
+        clock => clock,
+        reset => reset,
+        din => right_channel,
+        coeffs => AUDIO_LPR_COEFFS,
+        in_empty => right_channel_empty,
+        out_full => right_low_full,
+        in_rd_en => right_channel_rd_en,
+        dout => right_low_din,
+        out_wr_en => right_low_wr_en
+    );
+
+    right_low_buffer : fifo
+    generic map
+    (
+        DWIDTH => WORD_SIZE,
+        BUFFER_SIZE => RIGHT_LOW_BUFFER_SIZE
+    )
+    port map
+    (
+        rd_clk => clock,
+        wr_clk => clock,
+        reset => reset,
+        rd_en => right_low_rd_en,
+        wr_en => right_low_wr_en,
+        din => right_low_din,
+        dout => right_low,
+        full => right_low_full,
+        empty => right_low_empty
+    );
+
+    left_channel_buffer : fifo
+    generic map
+    (
+        DWIDTH => WORD_SIZE,
+        BUFFER_SIZE => LEFT_CHANNEL_BUFFER_SIZE
+    )
+    port map
+    (
+        rd_clk => clock,
+        wr_clk => clock,
+        reset => reset,
+        rd_en => left_channel_rd_en,
+        wr_en => demod_wr_en,
+        din => demodulated,
+        dout => left_channel,
+        full => left_channel_full,
+        empty => left_channel_empty
+    );
+
+    left_band_filter : fir
+    generic map
+    (
+        TAPS => BP_LMR_COEFF_TAPS
+    )
+    port map
+    (
+        clock => clock,
+        reset => reset,
+        din => left_channel,
+        coeffs => BP_LMR_COEFFS,
+        in_empty => left_channel_empty,
+        out_full => left_band_full,
+        in_rd_en => left_channel_rd_en,
+        dout => left_band_din,
+        out_wr_en => left_band_wr_en 
+    );
+
+    left_band_buffer : fifo
+    generic map
+    (
+        DWIDTH => WORD_SIZE,
+        BUFFER_SIZE => LEFT_BAND_BUFFER_SIZE
+    )
+    port map
+    (
+        rd_clk => clock,
+        wr_clk => clock,
+        reset => reset,
+        rd_en => left_band_rd_en,
+        wr_en => left_band_wr_en,
+        din => left_band_din,
+        dout => left_band,
+        full => left_band_full,
+        empty => left_band_empty
+    );
+
     pre_pilot_buffer : fifo
     generic map
     (
@@ -395,62 +508,6 @@ begin
         empty => pilot_empty
     );
 
-    left_channel_buffer : fifo
-    generic map
-    (
-        DWIDTH => WORD_SIZE,
-        BUFFER_SIZE => LEFT_CHANNEL_BUFFER_SIZE
-    )
-    port map
-    (
-        rd_clk => clock,
-        wr_clk => clock,
-        reset => reset,
-        rd_en => left_channel_rd_en,
-        wr_en => demod_wr_en,
-        din => demodulated,
-        dout => left_channel,
-        full => left_channel_full,
-        empty => left_channel_empty
-    );
-
-    left_band_filter : fir
-    generic map
-    (
-        TAPS => BP_LMR_COEFF_TAPS
-    )
-    port map
-    (
-        clock => clock,
-        reset => reset,
-        din => left_channel,
-        coeffs => BP_LMR_COEFFS,
-        in_empty => left_channel_empty,
-        out_full => left_band_full,
-        in_rd_en => left_channel_rd_en,
-        dout => left_band_din,
-        out_wr_en => left_band_wr_en 
-    );
-
-    left_band_buffer : fifo
-    generic map
-    (
-        DWIDTH => WORD_SIZE,
-        BUFFER_SIZE => LEFT_BAND_BUFFER_SIZE
-    )
-    port map
-    (
-        rd_clk => clock,
-        wr_clk => clock,
-        reset => reset,
-        rd_en => left_band_rd_en,
-        wr_en => left_band_wr_en,
-        din => left_band_din,
-        dout => left_band,
-        full => left_band_full,
-        empty => left_band_empty
-    );
-
     multiplier : multiply 
     port map
     (
@@ -522,63 +579,6 @@ begin
         dout => left_low,
         full => left_low_full,
         empty => left_low_empty
-    );
-
-    right_channel_buffer : fifo
-    generic map
-    (
-        DWIDTH => WORD_SIZE,
-        BUFFER_SIZE => RIGHT_CHANNEL_BUFFER_SIZE
-    )
-    port map
-    (
-        rd_clk => clock,
-        wr_clk => clock,
-        reset => reset,
-        rd_en => right_channel_rd_en,
-        wr_en => demod_wr_en,
-        din => demodulated,
-        dout => right_channel,
-        full => right_channel_full,
-        empty => right_channel_empty
-    );
-
-    right_low_filter : fir_decimated
-    generic map
-    (
-        TAPS => AUDIO_LPR_COEFF_TAPS,
-        DECIMATION => AUDIO_DECIM
-    )
-    port map
-    (
-        clock => clock,
-        reset => reset,
-        din => right_channel,
-        coeffs => AUDIO_LPR_COEFFS,
-        in_empty => right_channel_empty,
-        out_full => right_low_full,
-        in_rd_en => right_channel_rd_en,
-        dout => right_low_din,
-        out_wr_en => right_low_wr_en
-    );
-
-    right_low_buffer : fifo
-    generic map
-    (
-        DWIDTH => WORD_SIZE,
-        BUFFER_SIZE => RIGHT_LOW_BUFFER_SIZE
-    )
-    port map
-    (
-        rd_clk => clock,
-        wr_clk => clock,
-        reset => reset,
-        rd_en => right_low_rd_en,
-        wr_en => right_low_wr_en,
-        din => right_low_din,
-        dout => right_low,
-        full => right_low_full,
-        empty => right_low_empty
     );
 
     adder_subtractor : addsub
