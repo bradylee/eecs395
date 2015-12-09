@@ -18,30 +18,33 @@ entity demodulate is
         imag_din : in std_logic_vector (WORD_SIZE - 1 downto 0);
         real_empty : in std_logic;
         imag_empty : in std_logic;
-        demod_full : out std_logic;
+        demod_full : in std_logic;
         real_rd_en : out std_logic;
         imag_rd_en : out std_logic;
         demod_dout : out std_logic_vector (WORD_SIZE - 1 downto 0);
-        demod_wr_en : in std_logic
+        demod_wr_en : out std_logic
     );
 end entity;
 
 architecture behavioral of demodulate is
-    type demod_state_type : (init, read, divide, write);
+    type demod_state_type is (init, read, divide, write);
     signal state, next_state : demod_state_type := init;
     signal real_prev, real_prev_c : std_logic_vector (WORD_SIZE - 1 downto 0);
     signal imag_prev, imag_prev_c : std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal dividend, dividend_c : std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal divisor, divisor_c : std_logic_vector (WORD_SIZE - 1 downto 0);
-    signal quotient, quotient_c : std_logic_vector (WORD_SIZE - 1 downto 0);
+    signal dividend, dividend_c : signed (WORD_SIZE - 1 downto 0);
+    signal divisor, divisor_c : signed (WORD_SIZE - 1 downto 0);
+    signal quotient, quotient_c : signed (WORD_SIZE - 1 downto 0);
     signal angle, angle_c : signed (WORD_SIZE - 1 downto 0) := (others => '0');
-    signal a, a_c, : signed (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal a, a_c : signed (WORD_SIZE - 1 downto 0) := (others => '0');
     signal b, b_c : signed (WORD_SIZE - 1 downto 0) := (others => '0');
+    signal q, q_c : signed (WORD_SIZE - 1 downto 0) := (others => '0');
 begin
 
     demod_process : process (state, real_din, imag_din, real_empty, imag_empty)
         variable r, i : signed (WORD_SIZE - 1 downto 0) := (others => '0');
-        variable dividend_v, divisor_v : std_logic_vector (WORD_SIZE - 1 downto 0);
+        variable dividend_v, divisor_v : signed (WORD_SIZE - 1 downto 0) := (others => '0');
+        variable p : integer := 0;
+        variable sign : std_logic := '0';
     begin
         next_state <= state;
 
@@ -69,8 +72,8 @@ begin
                     real_rd_en <= '1';
                     imag_rd_en <= '1';
 
-                    r := signed(DEQUANTIZE(unsigned(real_din) * unsigned(real_prev)) + DEQUANTIZE(unsigned(imag_din) * unsigned(imag_prev)));
-                    i := signed(DEQUANTIZE(unsigned(imag_din) * unsigned(real_prev)) - DEQUANTIZE(unsigned(real_din) * unsigned(imag_prev)));
+                    r := signed(DEQUANTIZE(signed(real_din) * signed(real_prev)) + DEQUANTIZE(signed(imag_din) * signed(imag_prev)));
+                    i := signed(DEQUANTIZE(signed(imag_din) * signed(real_prev)) - DEQUANTIZE(signed(real_din) * signed(imag_prev)));
                     i := abs(i) + 1;
 
                     real_prev_c <= real_din;
@@ -78,13 +81,13 @@ begin
 
                     if (r >= 0) then
                         --angle = QUAD1 - DEQUANTIZE(QUAD1 * DIV(QUANTIZE(r - i), r + i))
-                        angle_c <= QUAD1;
+                        angle_c <= to_signed(QUAD1, WORD_SIZE);
                         dividend_v := QUANTIZE(r - i);
                         divisor_v := r + i;
                     else
                         --angle = QUAD3 - DEQUANTIZE(QUAD3 * DIV(QUANTIZE(r + i), i - r))
-                        angle_c <= QUAD3;
-                        dividend_v <= QUANTIZE(r + i);
+                        angle_c <= to_signed(QUAD3, WORD_SIZE);
+                        dividend_v := QUANTIZE(r + i);
                         divisor_v := i - r;
                     end if;
 
@@ -107,12 +110,13 @@ begin
                     if ((b sll p) > a) then
                         p := p - 1;
                     end if;
-                    q_c <= q + (1 sll p);
+                    q_c <= q + (to_signed(1, WORD_SIZE) sll p);
                     a_c <= a - (b sll p);
                 else
-                    quotient_c <= q;
-                    if (a(WORD_SIZE - 1) xor b(WORD_SIZE - 1) = 1) then
-                        quotient_c <= -q;
+                    quotient_c <= q; 
+                    sign := a(WORD_SIZE - 1) xor b(WORD_SIZE - 1);
+                    if (sign = '1') then
+                        quotient_c <= -q; 
                     end if;
                     next_state <= write;
                 end if;
@@ -133,14 +137,26 @@ begin
     begin 
         if (reset = '1') then
             state <= init;
-            real_buffer <= (others => (others => '0'));
-            imag_buffer <= (others => (others => '0'));
-            dec_count <= 0;
+            real_prev <= (others => '0'); 
+            imag_prev <= (others => '0'); 
+            dividend <= (others => '0');  
+            divisor <= (others => '0');  
+            quotient <= (others => '0');  
+            angle <= (others => '0');  
+            a <= (others => '0'); 
+            b <= (others => '0'); 
+            q <= (others => '0'); 
         elsif (rising_edge(clock)) then
             state <= next_state;
-            real_buffer <= real_buffer_c;
-            imag_buffer <= imag_buffer_c;
-            dec_count <= dec_count_c;
+            real_prev <= real_prev_c;
+            imag_prev <= imag_prev_c;
+            dividend <= dividend_c;
+            divisor <= divisor_c;
+            quotient <= quotient_c;
+            angle <= angle_c;
+            a <= a_c;
+            b <= b_c;
+            q <= q_c;
         end if;
     end process;
 
