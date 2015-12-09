@@ -41,7 +41,7 @@ add wave -noupdate -group GAIN_RIGHT -radix hexadecimal /radio_tb/top_inst/gain_
 #run -all
 run 100 ns
 
-configure wave -namecolwidth 300
+configure wave -namecolwidth 350
 configure wave -valuecolwidth 100
 configure wave -timelineunits ns
 WaveRestoreZoom {0 ns} {75 ns}

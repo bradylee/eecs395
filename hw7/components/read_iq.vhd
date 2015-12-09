@@ -54,14 +54,14 @@ begin
                     i(BYTE*2 - 1 downto BYTE) := iq_din(BYTE*3 - 1 downto BYTE*2);
                     i(BYTE - 1 downto 0) := iq_din(BYTE*4 - 1 downto BYTE*3);
                     i(WORD_SIZE - 1 downto SHORT) := (others => i(SHORT - 1)); -- sign extend
-                    i_dout <= QUANTIZE(i);
+                    i_dout <= std_logic_vector(QUANTIZE(signed(i)));
                     i_wr_en <= '1';
 
                     -- read q
                     q(BYTE*2 - 1 downto BYTE) := iq_din(BYTE - 1 downto 0);
                     q(BYTE - 1 downto 0) := iq_din(BYTE*2 - 1 downto BYTE);
                     q(WORD_SIZE - 1 downto SHORT) := (others => q(SHORT - 1)); -- sign extend
-                    q_dout <= QUANTIZE(q);
+                    q_dout <= std_logic_vector(QUANTIZE(signed(q)));
                     q_wr_en <= '1';
                 end if;
 
