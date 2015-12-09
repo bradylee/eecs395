@@ -45,6 +45,8 @@ begin
             when init =>
                 if (in_empty = '0') then
                     next_state <= exec;
+                    in_rd_en <= '1';
+                    data_buffer_c(0) <= din;
                 end if;
 
             when exec =>

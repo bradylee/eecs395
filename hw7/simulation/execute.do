@@ -20,10 +20,11 @@ vcom -work work radio_tb.vhd
 vsim +notimingchecks -L work work.radio_tb -wlf vsim.wlf
 
 add wave -noupdate -group TEST_BENCH -radix hexadecimal /radio_tb/*
-add wave -noupdate -expand -group TOP_LEVEL -radix hexadecimal /radio_tb/top_inst/*
+add wave -noupdate -group TOP_LEVEL -radix hexadecimal /radio_tb/top_inst/*
 add wave -noupdate -group INPUT_READ -radix hexadecimal /radio_tb/top_inst/input_read/*
 add wave -noupdate -group CHANNEL_FILTER -radix hexadecimal /radio_tb/top_inst/channel_filter/*
-add wave -noupdate -group DEMODULATOR -radix hexadecimal /radio_tb/top_inst/demodulator/*
+add wave -noupdate -expand -group DEMODULATOR -radix hexadecimal /radio_tb/top_inst/demodulator/*
+add wave -noupdate -group DEMODULATOR -radix hexadecimal /radio_tb/top_inst/demodulator/demod_process/*
 add wave -noupdate -group PILOT_FILTER -radix hexadecimal /radio_tb/top_inst/pilot_filter/*
 add wave -noupdate -group SQUARER -radix hexadecimal /radio_tb/top_inst/squarer/*
 add wave -noupdate -group PILOT_SQUARED_FILTER -radix hexadecimal /radio_tb/top_inst/pilot_squared_filter/*

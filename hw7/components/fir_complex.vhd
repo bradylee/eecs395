@@ -56,6 +56,10 @@ begin
             when init =>
                 if (real_in_empty = '0' and imag_in_empty = '0') then
                     next_state <= exec;
+                    real_in_rd_en <= '1';
+                    imag_in_rd_en <= '1';
+                    real_buffer_c(0) <= real_din;
+                    imag_buffer_c(0) <= imag_din;
                 end if;
 
             when exec =>

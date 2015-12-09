@@ -49,6 +49,9 @@ begin
             when init =>
                 if (in_empty = '0') then
                     next_state <= exec;
+                    in_rd_en <= '1';
+                    x_buffer_c(0) <= din; 
+                    y_buffer_c(0) <= std_logic_vector(DEQUANTIZE(signed(x_coeffs(0)) * signed(din)));
                 end if;
 
             when exec =>
