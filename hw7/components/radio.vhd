@@ -9,27 +9,27 @@ use work.components.all;
 entity radio is
     generic
     (
-        INPUT_BUFFER_SIZE : natural := 512;
-        I_BUFFER_SIZE : natural := 512;
-        Q_BUFFER_SIZE : natural := 512;
-        I_FILTERED_BUFFER_SIZE : natural := 512;
-        Q_FILTERED_BUFFER_SIZE : natural := 512;
-        PRE_PILOT_BUFFER_SIZE : natural := 512;
-        PILOT_FILTERED_BUFFER_SIZE : natural := 512;
-        PILOT_SQUARED_BUFFER_SIZE : natural := 512;
-        PILOT_BUFFER_SIZE : natural := 512;
-        LEFT_CHANNEL_BUFFER_SIZE : natural := 512;
-        LEFT_BAND_BUFFER_SIZE : natural := 512;
-        LEFT_MULTIPLIED_BUFFER_SIZE : natural := 512;
-        LEFT_LOW_BUFFER_SIZE : natural := 512;
-        RIGHT_CHANNEL_BUFFER_SIZE : natural := 512;
-        RIGHT_LOW_BUFFER_SIZE : natural := 512;
-        LEFT_EMPH_BUFFER_SIZE : natural := 512;
-        RIGHT_EMPH_BUFFER_SIZE : natural := 512;
-        LEFT_DEEMPH_BUFFER_SIZE : natural := 512;
-        RIGHT_DEEMPH_BUFFER_SIZE : natural := 512;
-        LEFT_GAIN_BUFFER_SIZE : natural := 512;
-        RIGHT_GAIN_BUFFER_SIZE : natural := 512
+        INPUT_BUFFER_SIZE : natural := 64;
+        I_BUFFER_SIZE : natural := 64;
+        Q_BUFFER_SIZE : natural := 64;
+        I_FILTERED_BUFFER_SIZE : natural := 64;
+        Q_FILTERED_BUFFER_SIZE : natural := 64;
+        PRE_PILOT_BUFFER_SIZE : natural := 64;
+        PILOT_FILTERED_BUFFER_SIZE : natural := 64;
+        PILOT_SQUARED_BUFFER_SIZE : natural := 64;
+        PILOT_BUFFER_SIZE : natural := 64;
+        LEFT_CHANNEL_BUFFER_SIZE : natural := 64;
+        LEFT_BAND_BUFFER_SIZE : natural := 64;
+        LEFT_MULTIPLIED_BUFFER_SIZE : natural := 64;
+        LEFT_LOW_BUFFER_SIZE : natural := 64;
+        RIGHT_CHANNEL_BUFFER_SIZE : natural := 64;
+        RIGHT_LOW_BUFFER_SIZE : natural := 64;
+        LEFT_EMPH_BUFFER_SIZE : natural := 64;
+        RIGHT_EMPH_BUFFER_SIZE : natural := 64;
+        LEFT_DEEMPH_BUFFER_SIZE : natural := 64;
+        RIGHT_DEEMPH_BUFFER_SIZE : natural := 64;
+        LEFT_GAIN_BUFFER_SIZE : natural := 64;
+        RIGHT_GAIN_BUFFER_SIZE : natural := 64
     );
     port 
     (

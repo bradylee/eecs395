@@ -10,17 +10,28 @@ package constants is
     type quant_array is array (natural range <>) of std_logic_vector (WORD_SIZE - 1 downto 0); 
     type standard_state_type is (init, exec, idle, term);
 
-    constant PI : real := 3.1415926535897932384626433832795;
+--    constant PI : real := 3.1415926535897932384626433832795;
     constant ADC_RATE : natural := 64000000;
     constant USRP_DECIM : natural := 250;
     constant AUDIO_DECIM : natural := 8;
     constant MAX_TAPS : natural := 32;
     constant SAMPLES : natural := 65536 * 4;
-    constant MAX_DEV : real := 55000.0;
-    constant W_PP : real := 0.21140067;
+--    constant MAX_DEV : real := 55000.0;
+--    constant W_PP : real := 0.21140067;
+
+    constant QUAD_RATE : natural := ADC_RATE / USRP_DECIM;
+    constant AUDIO_RATE : natural := QUAD_RATE / AUDIO_DECIM;
+    constant AUDIO_SAMPLES : natural := SAMPLES / AUDIO_DECIM;
+
+    constant QUAD1 : integer := 804; --to_integer(signed(QUANTIZE_F(PI / 4.0)));
+    constant QUAD3 : integer := 2412; --to_integer(signed(QUANTIZE_F(3.0 * PI / 4.0)));
+    constant VOLUME_LEVEL : integer := 16#400#; --to_integer(signed(QUANTIZE_F(1.0)));
+    constant FM_DEMOD_GAIN : integer := 758; --to_integer(signed(QUANTIZE_F(real(QUAD_RATE) / (2.0 * PI * MAX_DEV))));
 
     -- Deemphasis IIR Filter Coefficients: 
     constant IIR_COEFF_TAPS : natural := 2;
+    constant IIR_X_COEFFS : quant_array (0 to IIR_COEFF_TAPS - 1) := (x"000000b2", x"000000b2"); --(QUANTIZE_F(W_PP / (1.0 + W_PP)), QUANTIZE_F(W_PP / (1.0 + W_PP)));
+    constant IIR_Y_COEFFS : quant_array (0 to IIR_COEFF_TAPS - 1) := ((others => '0'), x"fffffd66"); --(QUANTIZE_F(0.0), QUANTIZE_F((W_PP - 1.0) / (W_PP + 1.0)));
 
     -- Channel low-pass complex filter coefficients @ 0kHz to 80kHz
     constant CHANNEL_COEFF_TAPS : natural := 20;
