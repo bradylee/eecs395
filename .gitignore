@@ -2,7 +2,13 @@
 work/
 db/
 incremental_db/
+output_files/
 **/simulation/modelsim/
+**/simulation/work/
 transcript
 usrp.dat
 *.swp
+*.wlf
+*.qsf
+*.qpf
+
