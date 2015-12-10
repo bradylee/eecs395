@@ -5,7 +5,6 @@ use ieee.std_logic_textio.all;
 use std.textio.all;
 use work.constants.all;
 use work.functions.all;
-use work.dependent.all;
 use work.components.all;
 
 entity radio_tb is
@@ -92,9 +91,9 @@ begin
     top_inst : component radio
     generic map
     (
-        INPUT_BUFFER_SIZE => 8,
-        I_BUFFER_SIZE => 8,
-        Q_BUFFER_SIZE => 8,
+        INPUT_BUFFER_SIZE => 512,
+        I_BUFFER_SIZE => 512,
+        Q_BUFFER_SIZE => 512,
         I_FILTERED_BUFFER_SIZE => 32,
         Q_FILTERED_BUFFER_SIZE => 32,
         PRE_PILOT_BUFFER_SIZE => 32,
@@ -107,12 +106,12 @@ begin
         LEFT_LOW_BUFFER_SIZE => 32,
         RIGHT_CHANNEL_BUFFER_SIZE => 32,
         RIGHT_LOW_BUFFER_SIZE => 32,
-        LEFT_EMPH_BUFFER_SIZE => 8,
-        RIGHT_EMPH_BUFFER_SIZE => 8,
-        LEFT_DEEMPH_BUFFER_SIZE => 8,
-        RIGHT_DEEMPH_BUFFER_SIZE => 8,
-        LEFT_GAIN_BUFFER_SIZE => 8,
-        RIGHT_GAIN_BUFFER_SIZE => 8
+        LEFT_EMPH_BUFFER_SIZE => 256,
+        RIGHT_EMPH_BUFFER_SIZE => 256,
+        LEFT_DEEMPH_BUFFER_SIZE => 256,
+        RIGHT_DEEMPH_BUFFER_SIZE => 256,
+        LEFT_GAIN_BUFFER_SIZE => 256,
+        RIGHT_GAIN_BUFFER_SIZE => 256
     )
     port map
     (
