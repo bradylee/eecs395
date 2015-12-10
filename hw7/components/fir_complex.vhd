@@ -77,7 +77,7 @@ begin
                     real_buffer_v(0) := real_din;
                     imag_buffer_v(0) := imag_din;
                     real_buffer_c <= real_buffer_v;
-                    imag_buffer_c <= imag_buffer_c;
+                    imag_buffer_c <= imag_buffer_v;
                     for i in 0 to TAPS - 1 loop
                         sum_real := sum_real + signed(DEQUANTIZE(signed(CHANNEL_COEFFS_REAL(i)) * signed(real_buffer_v(i)) - signed(CHANNEL_COEFFS_IMAG(i)) * signed(imag_buffer_v(i))));
                         sum_imag := sum_imag + signed(DEQUANTIZE(signed(CHANNEL_COEFFS_REAL(i)) * signed(imag_buffer_v(i)) - signed(CHANNEL_COEFFS_IMAG(i)) * signed(real_buffer_v(i))));

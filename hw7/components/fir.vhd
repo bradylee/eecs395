@@ -55,9 +55,9 @@ begin
                     in_rd_en <= '1';
                     for i in TAPS - 1 downto 1 loop
                         -- shift buffer
-                        data_buffer_v(i) <= data_buffer(i - 1);
+                        data_buffer_v(i) := data_buffer(i - 1);
                     end loop;
-                    data_buffer_v(0) <= din;
+                    data_buffer_v(0) := din;
                     data_buffer_c <= data_buffer_v;
                     for i in 0 to TAPS - 1 loop
                         sum := sum + signed(DEQUANTIZE(signed(coeffs(TAPS - 1 - i)) * signed(data_buffer_v(i))));

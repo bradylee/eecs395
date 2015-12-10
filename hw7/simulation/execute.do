@@ -44,8 +44,8 @@ add wave -noupdate -group DEEMPHASIZE_RIGHT -radix hexadecimal /radio_tb/top_ins
 add wave -noupdate -group GAIN_LEFT -radix hexadecimal /radio_tb/top_inst/gain_left/*
 add wave -noupdate -group GAIN_RIGHT -radix hexadecimal /radio_tb/top_inst/gain_right/*
 
-#run -all
-run 500 ns
+run -all
+#run 500 ns
 
 configure wave -namecolwidth 325
 configure wave -valuecolwidth 100

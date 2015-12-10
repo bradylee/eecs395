@@ -168,17 +168,17 @@ void iir( int *x_in, const int *x_coeffs, const int *y_coeffs, int *x, int *y, c
         x[decimation-i-1] = x_in[i];
     }
 
-    // shift y 
-    for ( j = taps-1; j > 0; j--)
-    {
-        y[j] = y[j-1];
-    }
-
     // get the new y
     for ( i = 0; i < taps; i++ )
     {
         y1 += DEQUANTIZE( x_coeffs[i] * x[i] );
         y2 += DEQUANTIZE( y_coeffs[i] * y[i] );
+    }
+
+    // shift y 
+    for ( j = taps-1; j > 0; j--)
+    {
+        y[j] = y[j-1];
     }
 
     y[0] = y1 + y2;

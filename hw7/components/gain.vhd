@@ -45,7 +45,7 @@ begin
             when exec =>
                 if (in_empty = '0' and out_full = '0') then
                     in_rd_en <= '1';
-                    dout <= std_logic_vector(DEQUANTIZE(signed(din) * volume) sll (MYSTERY - FRAC_BITS));
+                    dout <= std_logic_vector(shift_left(DEQUANTIZE(signed(din) * volume), MYSTERY - FRAC_BITS));
                     out_wr_en <= '1';
                 end if;
 

@@ -26,7 +26,8 @@ int main(int argc, char **argv)
     }
     
     // initialize the audio output
-    int audio_fd = audio_init( AUDIO_RATE );
+    //int audio_fd = audio_init( AUDIO_RATE );
+    int audio_fd = open("test/usrp.out", O_WRONLY);
     if ( audio_fd < 0 )
     {
         printf("Failed to initialize audio!\n");
@@ -41,17 +42,19 @@ int main(int argc, char **argv)
     }    
     
     // run the FM receiver 
-    while( !feof(usrp_file) )
-    {
+    //while( !feof(usrp_file) )
+    //{
         // get I/Q from data file
         fread( IQ, sizeof(char), SAMPLES*4, usrp_file );
+        int input_fd = open("in.dat", O_WRONLY);
+        write(input_fd, IQ, SAMPLES*4);
 
         // fm radio in mono
         fm_radio_stereo( IQ, left_audio, right_audio );
 
         // write to audio output
         audio_tx( audio_fd, AUDIO_RATE, left_audio, right_audio, AUDIO_SAMPLES );
-    }
+    //}
 
     fclose( usrp_file );
     close( audio_fd );
