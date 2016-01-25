@@ -11,5 +11,6 @@ transcript
 *.wlf
 *.qsf
 *.qpf
+*.qws
 usrp.dat
 usrp.out
